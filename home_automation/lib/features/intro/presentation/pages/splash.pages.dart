@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/intro/presentation/pages/loading.pages.dart';
+import 'package:home_automation/features/landing/presentation/pages/auth_page.dart';
 import 'package:home_automation/helpers/utils.dart';
 import 'package:rive/rive.dart' as rive;
 
@@ -62,7 +63,7 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
 
     durationTimer = Timer(const Duration(seconds: 4), () {
-      GoRouter.of(Utils.mainNav.currentContext!).go(LoadingPage.route);
+      GoRouter.of(Utils.mainNav.currentContext!).go(AuthPage.route);
     });
 
     return Scaffold(

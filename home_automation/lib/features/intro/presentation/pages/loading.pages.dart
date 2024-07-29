@@ -80,7 +80,7 @@ class _LoadingPageState extends ConsumerState<LoadingPage> {
 
     if(loadingComplete == AppLoadingStates.success){
       SchedulerBinding.instance.addPostFrameCallback((_){
-        GoRouter.of(Utils.mainNav.currentContext!).go(AuthPage.route);
+        GoRouter.of(Utils.mainNav.currentContext!).go(HomePage.route);
       });
     }
 

@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:home_automation/features/decives/presentation/pages/devices.page.dart';
+import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
+import 'package:home_automation/features/devices/presentation/pages/devices.page.dart';
 import 'package:home_automation/features/intro/presentation/pages/loading.pages.dart';
 import 'package:home_automation/features/intro/presentation/pages/splash.pages.dart';
 import 'package:home_automation/features/landing/presentation/pages/auth_page.dart';
@@ -7,7 +8,7 @@ import 'package:home_automation/features/landing/presentation/pages/home.page.da
 import 'package:home_automation/features/landing/presentation/pages/landing.page.dart';
 import 'package:home_automation/features/landing/presentation/pages/login.page.dart';
 import 'package:home_automation/features/landing/presentation/pages/signin.page.dart';
-import 'package:home_automation/features/rooms/presentation/rooms.page.dart';
+import 'package:home_automation/features/rooms/presentation/pages/rooms.page.dart';
 import 'package:home_automation/features/settings/presentation/pages/settings.page.dart';
 import 'package:home_automation/helpers/utils.dart';
 
@@ -31,13 +32,13 @@ class AppRoutes {
           return const LoadingPage();
         }
       ),
-      GoRoute(
-        parentNavigatorKey: Utils.mainNav,
-        path: HomePage.route,
-        builder: (context, state){
-          return const HomePage();
-        }
-      ),
+      // GoRoute(
+      //   parentNavigatorKey: Utils.mainNav,
+      //   path: HomePage.route,
+      //   builder: (context, state){
+      //     return const HomePage();
+      //   }
+      // ),
       ShellRoute(
         navigatorKey: Utils.tabNav,
         builder: (context, state,child){
@@ -102,7 +103,14 @@ class AppRoutes {
         builder: (context, state){
           return  AuthPage();
         }
-      )
+      ),
+      GoRoute(
+        parentNavigatorKey: Utils.mainNav,
+        path: DeviceDetailsPage.route,
+        builder: (context, state) {
+          return const DeviceDetailsPage();
+        },
+      ),
     ]
   );
 }

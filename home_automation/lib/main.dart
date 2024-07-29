@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/firebase_options.dart';
 import 'package:home_automation/routes/app.routes.dart';
-import 'package:home_automation/styles/flicky_icons_icons.dart';
 import 'package:home_automation/styles/theams.dart';
 
 void main() async {
@@ -34,3 +33,5 @@ class HomeAutomationApp extends StatelessWidget {
     );
   }
 }
+
+C:\Users\Augustine\Desktop\S9 Project\home_automation\lib

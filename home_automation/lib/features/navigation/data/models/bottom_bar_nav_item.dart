@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:home_automation/helpers/enums.dart';
 
 class BottomBarNavItemModel {
 
-  final IconData iconOption;
+  final FlickyAnimatedIconOptions iconOption;
   final String label;
   final String route;
   final bool isSelected;
 
-  const BottomBarNavItemModel ({
+  const BottomBarNavItemModel({
     required this.iconOption,
     this.label = '',
     required this.route,
@@ -15,17 +15,16 @@ class BottomBarNavItemModel {
   });
 
   BottomBarNavItemModel copyWith({
-  IconData? iconOption,
-  String? label,
-  String? route,
-  bool? isSelected,
-  }){
+    FlickyAnimatedIconOptions? iconOption,
+    String? label,
+    String? route,
+    bool? isSelected
+  }) {
     return BottomBarNavItemModel(
-      iconOption: iconOption ?? this.iconOption,
-      label: label ?? this.label,
+      iconOption: iconOption ?? this.iconOption, 
       route: route ?? this.route,
-      isSelected: isSelected ?? this.isSelected,
+      label: label ?? this.label,
+      isSelected:  isSelected ?? this.isSelected
     );
   }
 }
-
