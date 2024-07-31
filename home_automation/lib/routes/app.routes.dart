@@ -87,14 +87,14 @@ class AppRoutes {
         parentNavigatorKey: Utils.mainNav,
         path: SigninPage.route,
         builder: (context, state){
-          return const SigninPage();
+          return  SigninPage(onTap: () {  },);
         }
       ),
       GoRoute(
         parentNavigatorKey: Utils.mainNav,
         path: LoginPage.route,
         builder: (context, state){
-          return  LoginPage();
+          return  LoginPage(onTap: () {  },);
         }
       ),
       GoRoute(

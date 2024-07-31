@@ -34,4 +34,5 @@ class HomeAutomationApp extends StatelessWidget {
   }
 }
 
-C:\Users\Augustine\Desktop\S9 Project\home_automation\lib
+// C:\Users\Augustine\Desktop\S9 Project\home_automation\lib\main.dart
+

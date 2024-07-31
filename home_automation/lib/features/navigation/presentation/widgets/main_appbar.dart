@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:home_automation/features/landing/presentation/pages/auth_page.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
+import 'package:home_automation/helpers/utils.dart';
 import 'package:home_automation/styles/styles.dart';
 
 class HomeAutomationAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -14,6 +18,13 @@ class HomeAutomationAppBar extends StatefulWidget implements PreferredSizeWidget
 }
 
 class _HomeAutomationAppBarState extends State<HomeAutomationAppBar> {
+
+  void signUserout(){
+    FirebaseAuth.instance.signOut();
+    GoRouter.of(Utils.mainNav.currentContext!).go(AuthPage.route);
+
+
+  }
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -32,9 +43,7 @@ class _HomeAutomationAppBarState extends State<HomeAutomationAppBar> {
             icon: const Icon(
               Icons.notifications_outlined,
             ),
-            onPressed: () {
-              
-            },
+            onPressed: signUserout,
           ),
           HomeAutomationStyles.xsmallHGap
         ],
