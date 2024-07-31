@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/data/models/outlet.model.dart';
-import 'package:home_automation/features/shared/services/firestore.service.dart';
 import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
 
 class OutletsRepository {

@@ -18,15 +18,43 @@ class AddDeviceForm extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
     final deviceNameCtrl = ref.read(deviceNameFieldProvider);
     final isFormValid = ref.watch(formValidationProvider);
-    final outletList = ref.read(outletListProvider);
-    final outletValue = ref.read(outletValueProvider);
-    
+    final outletListAsyncValue = ref.watch(outletListProvider);
+    final selectedOutlet = ref.watch(outletValueProvider);
+
+    return outletListAsyncValue.when(
+      data: (outlets) {
+        // Now you can safely use outlets
+        return _buildForm(
+          context,
+          ref,
+          outlets,
+          selectedOutlet,
+          colorScheme,
+          textTheme,
+          deviceNameCtrl,
+          isFormValid,
+        );
+      },
+      loading: () => CircularProgressIndicator(),
+      error: (error, stack) => Text('Error loading outlets: $error'),
+    );
+  }
+
+  Widget _buildForm(
+    BuildContext context,
+    WidgetRef ref,
+    List<OutletModel> outlets,
+    OutletModel? selectedOutlet,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    TextEditingController deviceNameCtrl,
+    bool isFormValid,
+  ) {
     return Material(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -101,36 +129,16 @@ class AddDeviceForm extends ConsumerWidget {
                     HomeAutomationStyles.mediumVGap,
                     const DeviceTypeSelectionPanel(),
                     HomeAutomationStyles.mediumVGap,
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<OutletModel?>(
-                        borderRadius: BorderRadius.circular(10),
-                        dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-                        underline: null,
-                        hint: Padding(
-                          padding: HomeAutomationStyles.smallPadding,
-                          child: Text('Select Outlet', style: Theme.of(context).textTheme.labelMedium!
-                          .copyWith(color: Colors.grey)),
-                        ),
-                        value: outletValue,
-                        items: [
-                          DropdownMenuItem<OutletModel?>(
-                            value: null,
-                            child: Text('No outlet selected', style: Theme.of(context).textTheme.labelMedium),
-                          ),
-                          ...outletList.map<DropdownMenuItem<OutletModel>>((outlet) {
-                            return DropdownMenuItem<OutletModel>(
-                              value: outlet,
-                              child: Text(outlet.label, style: Theme.of(context).textTheme.labelMedium!
-                              .copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary))
-                            );
-                          }).toList(),
-                        ],
-                        onChanged: (OutletModel? value) {
-                          ref.read(outletValueProvider.notifier).state = value;
-                        }
-                      ),
+                    DropdownButtonFormField<OutletModel>(
+                      value: selectedOutlet,
+                      items: outlets.map((outlet) => DropdownMenuItem(
+                        value: outlet,
+                        child: Text(outlet.label),
+                      )).toList(),
+                      onChanged: (OutletModel? value) {
+                        ref.read(outletValueProvider.notifier).state = value;
+                      },
+                      decoration: InputDecoration(labelText: 'Select Outlet'),
                     ),
                   ],
                 ),
@@ -144,7 +152,7 @@ class AddDeviceForm extends ConsumerWidget {
                 final deviceName = ref.read(deviceNameValueProvider);
                 final deviceTypes = ref.read(deviceTypeSelectionVMProvider);
                 final selectedDeviceType = deviceTypes.firstWhereOrNull((device) => device.isSelected);
-                final outlet = ref.read(outletValueProvider);
+                final selectedOutlet = ref.read(outletValueProvider);
 
                 if (selectedDeviceType == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -157,12 +165,11 @@ class AddDeviceForm extends ConsumerWidget {
                   iconOption: selectedDeviceType.iconOption,
                   label: deviceName,
                   isSelected: false,
-                  outlet: outlet?.id != null ? int.tryParse(outlet!.id.toString()) ?? 0 : 0,
+                  outlet: selectedOutlet?.id != null ? int.tryParse(selectedOutlet!.id.toString()) ?? 0 : 0,
                 );
 
                 try {
                   await ref.read(deviceRepositoryProvider).addDevice(newDevice);
-                  // Handle successful addition
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Device added successfully')),
                   );

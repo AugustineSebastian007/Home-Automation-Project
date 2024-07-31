@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:home_automation/features/intro/presentation/pages/loading.pages.dart';
 import 'package:home_automation/features/landing/presentation/pages/auth_page.dart';
 import 'package:home_automation/helpers/utils.dart';
 import 'package:rive/rive.dart' as rive;

@@ -1,36 +1,36 @@
 class OutletModel {
-  final String id;
-  final String label;
+  final int id;
   final String ip;
+  final String label;
   final bool isTaken;
 
   OutletModel({
     required this.id,
-    required this.label,
     required this.ip,
+    required this.label,
     this.isTaken = false,
   });
 
   // Add this method
   OutletModel copyWith({
-    String? id,
-    String? label,
+    int? id,
     String? ip,
+    String? label,
     bool? isTaken,
   }) {
     return OutletModel(
       id: id ?? this.id,
-      label: label ?? this.label,
       ip: ip ?? this.ip,
+      label: label ?? this.label,
       isTaken: isTaken ?? this.isTaken,
     );
   }
 
-  factory OutletModel.fromJson(Map<String, dynamic> json, String docId) {
+  factory OutletModel.fromJson(Map<String, dynamic> json) {
     return OutletModel(
-      id: json['id'].toString(),
-      label: json['name'],
-      ip: json['ip'],
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()), // Ensure id is parsed as int
+      ip: json['ip'] ?? '', // Provide a default value if null
+      label: json['label'] ?? '', // Provide a default value if null
       isTaken: json['isTaken'] ?? false,
     );
   }

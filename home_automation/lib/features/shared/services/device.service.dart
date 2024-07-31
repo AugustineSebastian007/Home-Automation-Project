@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,6 +7,7 @@ import 'package:home_automation/helpers/utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/shared/models/device_response.model.dart';
+import 'package:collection/collection.dart';
 
 class DeviceService {
 
@@ -16,8 +16,19 @@ class DeviceService {
 
   Future<DeviceResponse> toggleDevice(DeviceModel device) async {
     try {
-      final outlet = ref.read(outletListProvider).firstWhere((o) => int.parse(o.id) == device.outlet);
-      var url = Uri.http(outlet.ip, 'relay/${outlet.id}', {'turn': (device.isSelected ? 'off' : 'on')});
+      final outletListAsyncValue = ref.watch(outletListProvider);
+      final selectedOutlet = await outletListAsyncValue.when(
+        data: (outlets) => outlets.firstWhereOrNull((o) => o.id == device.outlet),
+        loading: () => null,
+        error: (error, stack) => null,
+      );
+
+      if (selectedOutlet == null) {
+        Utils.showMessageOnSnack('Outlet not found.', 'Please try again.');
+        return DeviceResponse(statusCode: 0, success: false);
+      }
+
+      var url = Uri.http(selectedOutlet.ip, 'relay/${selectedOutlet.id}', {'turn': (device.isSelected ? 'off' : 'on')});
       var response = await http.get(url).timeout(2.seconds);
       return DeviceResponse(statusCode: response.statusCode, success: response.statusCode == 200);
     }

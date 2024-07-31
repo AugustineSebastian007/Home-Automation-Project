@@ -27,7 +27,7 @@ class AddDeviceSaveViewModel extends StateNotifier<AddDeviceStates> {
         iconOption: deviceType.iconOption,
         label: label,
         isSelected: false,
-        outlet: int.parse(outlet!.id),
+        outlet: outlet!.id, // Use directly if outlet is an int
       )
     );
 

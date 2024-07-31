@@ -4,18 +4,14 @@ import 'package:home_automation/features/devices/data/models/outlet.model.dart';
 import 'package:home_automation/features/devices/data/repositories/devices.repository.dart';
 import 'package:home_automation/features/devices/data/repositories/outlets.repository.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/devicelist.viewmodel.dart';
-import 'package:home_automation/features/devices/presentation/viewmodels/outletlist.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_type.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_save.viewmodel.dart';
-import 'package:home_automation/features/devices/presentation/viewmodels/add_device_type.viewmodel.dart';
 import 'package:home_automation/features/shared/services/firestore.service.dart';
 import 'package:home_automation/helpers/enums.dart'; // Adjust the path as needed
 import 'package:flutter/material.dart';
 
 
-final deviceNameFieldProvider = Provider((ref) {
-  return TextEditingController();
-});
+final deviceNameFieldProvider = Provider((ref) => TextEditingController());
 
 final deviceNameValueProvider = StateProvider<String>((ref) => '');
 
@@ -25,14 +21,9 @@ final deviceRepositoryProvider = Provider((ref) => DevicesRepository(ref));
 
 final outletRepositoryProvider = Provider((ref) => OutletsRepository(ref));
 
-final outletListRepositoryProvider = FutureProvider<bool>((ref) async {
-  final outletList = await ref.read(outletRepositoryProvider).getAvailableOutlets();
-  ref.read(outletListProvider.notifier).initializeList(outletList);
-  return true;
-});
-
-final outletListProvider = StateNotifierProvider<OutletListViewModel, List<OutletModel>>((ref) {
-  return OutletListViewModel([], ref);
+final outletListProvider = FutureProvider<List<OutletModel>>((ref) async {
+  final outletRepository = ref.read(outletRepositoryProvider);
+  return await outletRepository.getAvailableOutlets();
 });
 
 final outletValueProvider = StateProvider<OutletModel?>((ref) => null);

@@ -32,14 +32,6 @@ class FirestoreService {
 
   Future<List<OutletModel>> getOutlets() async {
     final snapshot = await _firestore.collection('outlets').get();
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      return OutletModel(
-        id: (data['id'] ?? '').toString(),
-        label: data['name'] as String? ?? '',
-        ip: data['ip'] as String? ?? '0.0.0.0',
-        isTaken: data['isTaken'] as bool? ?? false,
-      );
-    }).toList();
+    return snapshot.docs.map((doc) => OutletModel.fromJson(doc.data())).toList();
   }
 }
