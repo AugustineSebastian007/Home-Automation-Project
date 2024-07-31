@@ -2,7 +2,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
-import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+// import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
 import 'package:home_automation/features/shared/providers/shared_providers.dart';
 
 class DeviceToggleViewModel extends StateNotifier<bool> {

@@ -2,21 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/shared/models/device_response.model.dart';
 import 'package:home_automation/features/shared/services/device.service.dart';
-import 'package:home_automation/features/shared/services/localstorage.service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:home_automation/features/shared/services/firestore.service.dart';
 
-final sharedPrefsInstanceProvider = Provider((ref) {
-  return SharedPreferences.getInstance();
-});
-
-final sharedPrefsLoaderProvider = FutureProvider<SharedPreferences>((ref) async {
-  final prefs = await ref.read(sharedPrefsInstanceProvider);
-  return prefs;
-});
-
-final localStorageProvider = Provider((ref) {
-  return LocalStorageService(ref);
-});
+final firestoreServiceProvider = Provider((ref) => FirestoreService());
 
 final deviceServiceProvider = Provider((ref) {
   return DeviceService(ref);

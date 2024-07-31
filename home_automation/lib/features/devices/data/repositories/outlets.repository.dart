@@ -1,25 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/data/models/outlet.model.dart';
+import 'package:home_automation/features/shared/services/firestore.service.dart';
+import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
 
 class OutletsRepository {
+  final Ref ref;
+  OutletsRepository(this.ref);
 
-  Future<List<OutletModel>> getAvailableOutlets() {
-
-    return Future.value([
-      OutletModel(
-        id: '0',
-        label: 'Outlet #0',
-        ip: '192.168.68.117',
-      ),
-      OutletModel(
-        id: '1',
-        label: 'Outlet #1',
-        ip: '192.168.68.118'
-      ),
-      OutletModel(
-        id: '2',
-        label: 'Outlet #2',
-        ip: '192.168.68.119'
-      )
-    ]);
+  Future<List<OutletModel>> getAvailableOutlets() async {
+    final firestoreService = ref.read(firestoreServiceProvider);
+    return await firestoreService.getOutlets();
   }
 }

@@ -10,28 +10,22 @@ class DevicesRepository {
   final Ref ref;
   DevicesRepository(this.ref);
   
-  Future<List<DeviceModel>> getListOfDevices() {
-
-    return Future.delayed(2.seconds, () {
-      String configAsString = ref.read(localStorageProvider).getDeviceListConfig();
-      List<DeviceModel> deviceList = [];
-      
-      if (configAsString.isNotEmpty) {
-        List<dynamic> decodedList = json.decode(configAsString);
-
-        deviceList = decodedList.map(
-          (e) => DeviceModel.fromJson(e as Map<String, dynamic>)
-        ).toList();
-      }
-
-      return deviceList;
-    });
+  Future<List<DeviceModel>> getListOfDevices() async {
+    return await ref.read(firestoreServiceProvider).getDeviceList();
   }
 
-  void saveDeviceList(List<DeviceModel> deviceList) {
-    List<Map<String, dynamic>> serializedList = deviceList.map((device) => device.toJson()).toList();
-    //encode the list to pass it as String to be called by Shared Preference.
-    String deviceListAsString = json.encode(serializedList);
-    ref.read(localStorageProvider).storeDeviceListConfig(deviceListAsString);
+  Future<void> saveDeviceList(List<DeviceModel> deviceList) async {
+    await ref.read(firestoreServiceProvider).storeDeviceList(deviceList);
+  }
+
+  Future<void> addDevice(DeviceModel newDevice) async {
+    try {
+      final currentDevices = await getListOfDevices();
+      currentDevices.add(newDevice);
+      await saveDeviceList(currentDevices);
+    } catch (e) {
+      print('Error in addDevice: $e');
+      throw Exception('Failed to add device');
+    }
   }
 }

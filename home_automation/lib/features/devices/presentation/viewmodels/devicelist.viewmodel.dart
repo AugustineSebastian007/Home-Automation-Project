@@ -2,15 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
-import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
 import 'package:home_automation/helpers/utils.dart';
 
 class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
   
   final Ref ref;
-  DeviceListViewModel(super.state, this.ref);
+  DeviceListViewModel(List<DeviceModel> initialState, this.ref) : super(initialState);
 
-  void initializeState(List<DeviceModel> devices) {
+  Future<void> _initializeDevices() async {
+    final devices = await ref.read(deviceRepositoryProvider).getListOfDevices();
     state = devices;
   }
 

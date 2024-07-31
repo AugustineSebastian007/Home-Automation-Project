@@ -5,6 +5,8 @@ import 'package:home_automation/features/devices/presentation/providers/add_devi
 import 'package:home_automation/features/devices/presentation/widgets/add_device_workflow/device_type_selection_panel.dart';
 import 'package:home_automation/styles/flicky_icons_icons.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:home_automation/features/devices/data/models/device.model.dart';
+import 'package:collection/collection.dart';
 
 class AddDeviceForm extends ConsumerWidget {
 
@@ -23,7 +25,7 @@ class AddDeviceForm extends ConsumerWidget {
     final deviceNameCtrl = ref.read(deviceNameFieldProvider);
     final isFormValid = ref.watch(formValidationProvider);
     final outletList = ref.read(outletListProvider);
-    final outletValue = ref.watch(outletValueProvider);
+    final outletValue = ref.read(outletValueProvider);
     
     return Material(
       child: Column(
@@ -100,7 +102,7 @@ class AddDeviceForm extends ConsumerWidget {
                     const DeviceTypeSelectionPanel(),
                     HomeAutomationStyles.mediumVGap,
                     DropdownButtonHideUnderline(
-                      child: DropdownButton<OutletModel>(
+                      child: DropdownButton<OutletModel?>(
                         borderRadius: BorderRadius.circular(10),
                         dropdownColor: Theme.of(context).scaffoldBackgroundColor,
                         underline: null,
@@ -110,20 +112,23 @@ class AddDeviceForm extends ConsumerWidget {
                           .copyWith(color: Colors.grey)),
                         ),
                         value: outletValue,
-                        items: outletList.map<DropdownMenuItem<OutletModel>>((outlet) {
-                          return DropdownMenuItem<OutletModel>(
-                            value: outlet,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
+                        items: [
+                          DropdownMenuItem<OutletModel?>(
+                            value: null,
+                            child: Text('No outlet selected', style: Theme.of(context).textTheme.labelMedium),
+                          ),
+                          ...outletList.map<DropdownMenuItem<OutletModel>>((outlet) {
+                            return DropdownMenuItem<OutletModel>(
+                              value: outlet,
                               child: Text(outlet.label, style: Theme.of(context).textTheme.labelMedium!
                               .copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary))
-                            )
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ],
                         onChanged: (OutletModel? value) {
-                          ref.read(outletValueProvider.notifier).state = value!;
+                          ref.read(outletValueProvider.notifier).state = value;
                         }
                       ),
                     ),
@@ -135,8 +140,39 @@ class AddDeviceForm extends ConsumerWidget {
           Padding(
             padding: HomeAutomationStyles.largePadding,
             child: ElevatedButton(
-              onPressed: isFormValid ? () {
-                onSave();
+              onPressed: isFormValid ? () async {
+                final deviceName = ref.read(deviceNameValueProvider);
+                final deviceTypes = ref.read(deviceTypeSelectionVMProvider);
+                final selectedDeviceType = deviceTypes.firstWhereOrNull((device) => device.isSelected);
+                final outlet = ref.read(outletValueProvider);
+
+                if (selectedDeviceType == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please select a device type')),
+                  );
+                  return;
+                }
+
+                final newDevice = DeviceModel(
+                  iconOption: selectedDeviceType.iconOption,
+                  label: deviceName,
+                  isSelected: false,
+                  outlet: outlet?.id != null ? int.tryParse(outlet!.id.toString()) ?? 0 : 0,
+                );
+
+                try {
+                  await ref.read(deviceRepositoryProvider).addDevice(newDevice);
+                  // Handle successful addition
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Device added successfully')),
+                  );
+                  // Navigate back or clear form
+                } catch (e) {
+                  print('Error adding device: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to add device. Please try again.')),
+                  );
+                }
               } : null,
               child: const Text('Add Device')
             ),

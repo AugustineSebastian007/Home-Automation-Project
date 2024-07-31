@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
-import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+// import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/helpers/utils.dart';
 
@@ -41,10 +41,9 @@ class AddDeviceSaveViewModel extends StateNotifier<AddDeviceStates> {
   }
 
   Future<bool> saveDeviceList() async {
-    await Future.delayed(1.seconds);
     final updatedList = ref.read(deviceListVMProvider);
-    ref.read(deviceRepositoryProvider).saveDeviceList(updatedList);
-    return Future.value(true);
+    await ref.read(deviceRepositoryProvider).saveDeviceList(updatedList);
+    return true;
   }
 
   void resetAllValues() {

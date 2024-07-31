@@ -1,13 +1,17 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/data/models/outlet.model.dart';
+import 'package:home_automation/features/devices/data/repositories/devices.repository.dart';
 import 'package:home_automation/features/devices/data/repositories/outlets.repository.dart';
-import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+import 'package:home_automation/features/devices/presentation/viewmodels/devicelist.viewmodel.dart';
+import 'package:home_automation/features/devices/presentation/viewmodels/outletlist.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_type.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_save.viewmodel.dart';
-import 'package:home_automation/features/devices/presentation/viewmodels/outletlist.viewmodel.dart';
-import 'package:home_automation/helpers/enums.dart';
+import 'package:home_automation/features/devices/presentation/viewmodels/add_device_type.viewmodel.dart';
+import 'package:home_automation/features/shared/services/firestore.service.dart';
+import 'package:home_automation/helpers/enums.dart'; // Adjust the path as needed
+import 'package:flutter/material.dart';
+
 
 final deviceNameFieldProvider = Provider((ref) {
   return TextEditingController();
@@ -15,8 +19,14 @@ final deviceNameFieldProvider = Provider((ref) {
 
 final deviceNameValueProvider = StateProvider<String>((ref) => '');
 
+final firestoreServiceProvider = Provider((ref) => FirestoreService());
+
+final deviceRepositoryProvider = Provider((ref) => DevicesRepository(ref));
+
+final outletRepositoryProvider = Provider((ref) => OutletsRepository(ref));
+
 final outletListRepositoryProvider = FutureProvider<bool>((ref) async {
-  final outletList = await OutletsRepository().getAvailableOutlets();
+  final outletList = await ref.read(outletRepositoryProvider).getAvailableOutlets();
   ref.read(outletListProvider.notifier).initializeList(outletList);
   return true;
 });
@@ -73,21 +83,19 @@ final deviceTypeSelectionVMProvider = StateNotifierProvider<AddDeviceTypeViewMod
 });
 
 final formValidationProvider = Provider<bool>((ref) {
+  final deviceName = ref.watch(deviceNameValueProvider);
+  final deviceTypes = ref.watch(deviceTypeSelectionVMProvider);
+  final hasSelectedType = deviceTypes.any((device) => device.isSelected);
 
-  var deviceName = ref.watch(deviceNameValueProvider);
-  var outlet = ref.watch(outletValueProvider);
-  var deviceTypes = ref.watch(deviceTypeSelectionVMProvider);
-  var deviceTypeSelected = deviceTypes.any((e) => e.isSelected);
-  
-  var deviceDoesNotExist = 
-    !ref.read(deviceListVMProvider.notifier).deviceExists(deviceName);
-  
-  var isFormValid = deviceName.isNotEmpty && 
-      deviceTypeSelected && deviceDoesNotExist && outlet != null; 
-
-  return isFormValid;
+  return deviceName.isNotEmpty && hasSelectedType;
 });
 
 final saveAddDeviceVMProvider = StateNotifierProvider<AddDeviceSaveViewModel, AddDeviceStates>((ref) {
   return AddDeviceSaveViewModel(AddDeviceStates.none, ref);
 });
+
+final deviceListVMProvider = StateNotifierProvider<DeviceListViewModel, List<DeviceModel>>((ref) {
+  return DeviceListViewModel([], ref);
+});
+
+final selectedDeviceProvider = StateProvider<DeviceModel?>((ref) => null);
