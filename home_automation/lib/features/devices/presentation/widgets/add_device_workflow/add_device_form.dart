@@ -7,10 +7,12 @@ import 'package:home_automation/styles/flicky_icons_icons.dart';
 import 'package:home_automation/styles/styles.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:collection/collection.dart';
+import 'package:home_automation/features/rooms/data/models/room.model.dart';
+import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart';
 
 class AddDeviceForm extends ConsumerWidget {
 
-  final Function onSave;
+  final VoidCallback onSave;
   const AddDeviceForm({
     required this.onSave,
     super.key
@@ -23,37 +25,44 @@ class AddDeviceForm extends ConsumerWidget {
 
     final deviceNameCtrl = ref.read(deviceNameFieldProvider);
     final isFormValid = ref.watch(formValidationProvider);
-    final outletListAsyncValue = ref.watch(outletListProvider);
+    final roomListAsyncValue = ref.watch(roomListStreamProvider);
+    final selectedRoom = ref.watch(roomValueProvider) as RoomModel?;
+    final outletListAsyncValue = selectedRoom != null
+        ? ref.watch(outletListProvider(selectedRoom.id))
+        : const AsyncValue<List<OutletModel>>.loading();
     final selectedOutlet = ref.watch(outletValueProvider);
 
-    return outletListAsyncValue.when(
-      data: (outlets) {
-        // Now you can safely use outlets
+    return roomListAsyncValue.when(
+      data: (rooms) {
         return _buildForm(
           context,
           ref,
-          outlets,
+          rooms,
+          selectedRoom,
           selectedOutlet,
           colorScheme,
           textTheme,
           deviceNameCtrl,
           isFormValid,
+          outletListAsyncValue,
         );
       },
       loading: () => CircularProgressIndicator(),
-      error: (error, stack) => Text('Error loading outlets: $error'),
+      error: (error, stack) => Text('Error loading rooms: $error'),
     );
   }
 
   Widget _buildForm(
     BuildContext context,
     WidgetRef ref,
-    List<OutletModel> outlets,
-    OutletModel? selectedOutlet,
+    List<RoomModel> rooms,
+    RoomModel? selectedRoom,
+    int? selectedOutlet,
     ColorScheme colorScheme,
     TextTheme textTheme,
     TextEditingController deviceNameCtrl,
     bool isFormValid,
+    AsyncValue<List<OutletModel>> outletListAsyncValue,
   ) {
     return Material(
       child: Column(
@@ -129,17 +138,36 @@ class AddDeviceForm extends ConsumerWidget {
                     HomeAutomationStyles.mediumVGap,
                     const DeviceTypeSelectionPanel(),
                     HomeAutomationStyles.mediumVGap,
-                    DropdownButtonFormField<OutletModel>(
-                      value: selectedOutlet,
-                      items: outlets.map((outlet) => DropdownMenuItem(
-                        value: outlet,
-                        child: Text(outlet.label),
+                    DropdownButtonFormField<RoomModel>(
+                      value: selectedRoom,
+                      items: rooms.map((room) => DropdownMenuItem(
+                        value: room,
+                        child: Text(room.name),
                       )).toList(),
-                      onChanged: (OutletModel? value) {
-                        ref.read(outletValueProvider.notifier).state = value;
+                      onChanged: (RoomModel? value) {
+                        ref.read(roomValueProvider.notifier).state = value;
                       },
-                      decoration: InputDecoration(labelText: 'Select Outlet'),
+                      decoration: InputDecoration(labelText: 'Select Room'),
                     ),
+                    HomeAutomationStyles.mediumVGap,
+                    if (selectedRoom != null)
+                      outletListAsyncValue.when(
+                        data: (outlets) {
+                          return DropdownButtonFormField<OutletModel>(
+                            value: selectedOutlet != null ? outlets.firstWhere((outlet) => outlet.id == selectedOutlet) : null,
+                            items: outlets.map((outlet) => DropdownMenuItem(
+                              value: outlet,
+                              child: Text(outlet.label),
+                            )).toList(),
+                            onChanged: (OutletModel? value) {
+                              ref.read(outletValueProvider.notifier).state = value?.id;
+                            },
+                            decoration: InputDecoration(labelText: 'Select Outlet'),
+                          );
+                        },
+                        loading: () => CircularProgressIndicator(),
+                        error: (error, stack) => Text('Error loading outlets: $error'),
+                      ),
                   ],
                 ),
               ),
@@ -162,10 +190,11 @@ class AddDeviceForm extends ConsumerWidget {
                 }
 
                 final newDevice = DeviceModel(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
                   iconOption: selectedDeviceType.iconOption,
                   label: deviceName,
                   isSelected: false,
-                  outlet: selectedOutlet?.id != null ? int.tryParse(selectedOutlet!.id.toString()) ?? 0 : 0,
+                  outlet: selectedOutlet ?? 0,
                 );
 
                 try {
@@ -173,7 +202,7 @@ class AddDeviceForm extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Device added successfully')),
                   );
-                  // Navigate back or clear form
+                  onSave(); // Call the onSave callback
                 } catch (e) {
                   print('Error adding device: $e');
                   ScaffoldMessenger.of(context).showSnackBar(

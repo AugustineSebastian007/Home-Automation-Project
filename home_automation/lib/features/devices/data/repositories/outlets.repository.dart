@@ -6,7 +6,7 @@ class OutletsRepository {
   final Ref ref;
   OutletsRepository(this.ref);
 
-  Future<List<OutletModel>> getAvailableOutlets() async {
+  Future<List<OutletModel>> getAvailableOutlets(String roomId) async {
     final firestoreService = ref.read(firestoreServiceProvider);
     return await firestoreService.getOutlets();
   }

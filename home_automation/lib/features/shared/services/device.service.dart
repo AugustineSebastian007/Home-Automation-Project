@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/shared/models/device_response.model.dart';
 import 'package:collection/collection.dart';
+import 'package:home_automation/features/devices/presentation/providers/room_providers.dart';
+import 'package:home_automation/features/devices/data/models/outlet.model.dart';
 
 class DeviceService {
 
@@ -16,11 +18,14 @@ class DeviceService {
 
   Future<DeviceResponse> toggleDevice(DeviceModel device) async {
     try {
-      final outletListAsyncValue = ref.watch(outletListProvider);
+      final selectedRoom = ref.read(roomValueProvider);
+      final outletListAsyncValue = selectedRoom != null
+          ? ref.watch(outletListProvider(selectedRoom.id))
+          : const AsyncValue<List<OutletModel>>.loading();
       final selectedOutlet = await outletListAsyncValue.when(
         data: (outlets) => outlets.firstWhereOrNull((o) => o.id == device.outlet),
         loading: () => null,
-        error: (error, stack) => null,
+        error: (_, __) => null,
       );
 
       if (selectedOutlet == null) {

@@ -7,6 +7,11 @@ import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/devices/presentation/widgets/devices_list.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+import 'package:go_router/go_router.dart';
+import 'package:home_automation/features/devices/data/models/device.model.dart';
+import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
+import 'package:home_automation/helpers/utils.dart';
 
 class DevicesPage extends ConsumerWidget {
 
@@ -16,6 +21,16 @@ class DevicesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Add this line at the beginning of the build method
+    ref.read(deviceListVMProvider.notifier).fetchDevices();
+
+    ref.listen<DeviceModel?>(selectedDeviceProvider, (previous, next) {
+      if (next != null && Utils.isMobile()) {
+        Future.microtask(() {
+          GoRouter.of(context).pushNamed(DeviceDetailsPage.route);
+        });
+      }
+    });
 
     final config = DeviceDetailsResponsiveConfig.deviceDetailsConfig(context);
 
@@ -34,13 +49,18 @@ class DevicesPage extends ConsumerWidget {
           visible: config.showSingleLayout,
           replacement: Builder(
             builder: (context) {
-              return const Expanded(
+              final selectedDevice = ref.watch(selectedDeviceProvider);
+              return Expanded(
                 child: Padding(
                   padding: HomeAutomationStyles.mediumPadding,
                   child: Row(
                     children: [
-                      Expanded(child: DevicesList()),
-                      Expanded(child: DeviceDetailsPanel())
+                      const Expanded(child: DevicesList()),
+                      Expanded(
+                        child: selectedDevice != null
+                          ? DeviceDetailsPanel(device: selectedDevice)
+                          : const Center(child: Text('No device selected')),
+                      ),
                     ],
                   ),
                 ),

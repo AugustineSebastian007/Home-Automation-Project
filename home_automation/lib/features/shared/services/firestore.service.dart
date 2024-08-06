@@ -26,8 +26,13 @@ class FirestoreService {
   }
 
   Future<List<DeviceModel>> getDeviceList() async {
-    final snapshot = await _firestore.collection(_collection).get();
-    return snapshot.docs.map((doc) => DeviceModel.fromJson(doc.data())).toList();
+    final snapshot = await _firestore.collection('devices').get();
+    print("Raw Firestore data: ${snapshot.docs.map((doc) => doc.data())}");
+    return snapshot.docs.map((doc) => DeviceModel.fromJson({...doc.data(), 'id': doc.id})).toList();
+  }
+
+  Future<DocumentReference> addDevice(Map<String, dynamic> deviceData) async {
+    return await _firestore.collection('devices').add(deviceData);
   }
 
   Future<List<OutletModel>> getOutlets() async {

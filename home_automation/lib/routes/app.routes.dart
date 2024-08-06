@@ -9,6 +9,8 @@ import 'package:home_automation/features/landing/presentation/pages/landing.page
 import 'package:home_automation/features/landing/presentation/pages/login.page.dart';
 import 'package:home_automation/features/landing/presentation/pages/signin.page.dart';
 import 'package:home_automation/features/rooms/presentation/pages/rooms.page.dart';
+import 'package:home_automation/features/rooms/presentation/pages/add_room.page.dart';
+import 'package:home_automation/features/rooms/presentation/pages/room_details.page.dart' as details;
 import 'package:home_automation/features/settings/presentation/pages/settings.page.dart';
 import 'package:home_automation/helpers/utils.dart';
 
@@ -58,7 +60,7 @@ class AppRoutes {
           parentNavigatorKey: Utils.tabNav,
           path: RoomsPage.route,
           pageBuilder: (context, state){
-            return const NoTransitionPage(
+            return NoTransitionPage(
               child: RoomsPage()
               );
             }
@@ -110,6 +112,17 @@ class AppRoutes {
         builder: (context, state) {
           return const DeviceDetailsPage();
         },
+      ),
+      GoRoute(
+        parentNavigatorKey: Utils.mainNav,
+        path: AddRoomPage.route,
+        builder: (context, state) {
+          return AddRoomPage();
+        },
+      ),
+      GoRoute(
+        path: details.RoomDetailsPage.route,
+        builder: (context, state) => details.RoomDetailsPage(roomId: state.pathParameters['id']!),
       ),
     ]
   );

@@ -10,8 +10,12 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
   final Ref ref;
   DeviceListViewModel(List<DeviceModel> initialState, this.ref) : super(initialState);
 
-  Future<void> _initializeDevices() async {
+  Future<void> fetchDevices() async {
     final devices = await ref.read(deviceRepositoryProvider).getListOfDevices();
+    print("Fetched devices: ${devices.map((d) => d.toJson())}");
+    if (devices.any((d) => d.id.isEmpty)) {
+      print("Warning: Some devices have empty IDs");
+    }
     state = devices;
   }
 
@@ -40,11 +44,40 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
     return state.any((d) => d.label.trim().toLowerCase() == deviceName.trim().toLowerCase());
   }
 
-  void showDeviceDetails(device) {
+  void showDeviceDetails(DeviceModel device) async {
+    print("Showing details for device: ${device.toJson()}");
+    if (device.id.isEmpty) {
+      print("Warning: Device ID is empty. Full device data: ${device.toJson()}");
+      return;
+    }
+    
+    // Update the selectedDeviceProvider immediately
     ref.read(selectedDeviceProvider.notifier).state = device;
     
-    if (Utils.isMobile()) {
-      GoRouter.of(Utils.mainNav.currentContext!).push(DeviceDetailsPage.route);
+    print("Fetching detailed device information");
+    final detailedDevice = await ref.read(deviceRepositoryProvider).getDeviceDetails(device.id);
+    
+    print("Updating selected device with detailed information: ${detailedDevice.toJson()}");
+    if (detailedDevice.id.isNotEmpty) {
+      // Update the selectedDeviceProvider with the detailed device information
+      ref.read(selectedDeviceProvider.notifier).state = detailedDevice;
+      
+      if (Utils.isMobile()) {
+        print("Attempting to navigate to DeviceDetailsPage");
+        // Use a delay to ensure the provider is updated before navigation
+        Future.microtask(() {
+          try {
+            GoRouter.of(Utils.mainNav.currentContext!).pushNamed(DeviceDetailsPage.route);
+            print("Navigation to DeviceDetailsPage successful");
+          } catch (e) {
+            print("Error navigating to DeviceDetailsPage: $e");
+          }
+        });
+      } else {
+        print("Not navigating: Not on mobile");
+      }
+    } else {
+      print("Error: Detailed device has an empty ID. Full device data: ${detailedDevice.toJson()}");
     }
   }
 

@@ -18,20 +18,26 @@ class DevicesList extends ConsumerWidget {
       itemCount: devicesList.length,
       padding: HomeAutomationStyles.mediumPadding,
       itemBuilder: (context, index) {
-        return DeviceRowItem(
-          device: devicesList[index], 
-          onTapDevice: (device) {
-            ref.read(deviceListVMProvider.notifier).showDeviceDetails(device);
-          }
-        ).animate(
-          delay: (index * 0.125).seconds,
-        ).slideY(
-          begin: 0.5, end: 0,
-          duration: 0.5.seconds,
-          curve: Curves.easeInOut
-        ).fadeIn(
-          duration: 0.5.seconds,
-          curve: Curves.easeInOut
+        return GestureDetector(
+          onTap: () {
+            print("Selected device: ${devicesList[index].toJson()}");
+            ref.read(deviceListVMProvider.notifier).showDeviceDetails(devicesList[index]);
+          },
+          child: DeviceRowItem(
+            device: devicesList[index], 
+            onTapDevice: (device) {
+              ref.read(deviceListVMProvider.notifier).showDeviceDetails(device);
+            }
+          ).animate(
+            delay: (index * 0.125).seconds,
+          ).slideY(
+            begin: 0.5, end: 0,
+            duration: 0.5.seconds,
+            curve: Curves.easeInOut
+          ).fadeIn(
+            duration: 0.5.seconds,
+            curve: Curves.easeInOut
+          ),
         );
       },
     ) : const WarningMessage(message: "No available devices");

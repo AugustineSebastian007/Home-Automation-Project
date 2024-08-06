@@ -21,40 +21,45 @@ final deviceRepositoryProvider = Provider((ref) => DevicesRepository(ref));
 
 final outletRepositoryProvider = Provider((ref) => OutletsRepository(ref));
 
-final outletListProvider = FutureProvider<List<OutletModel>>((ref) async {
+final outletListProvider = FutureProvider.family<List<OutletModel>, String>((ref, roomId) async {
   final outletRepository = ref.read(outletRepositoryProvider);
-  return await outletRepository.getAvailableOutlets();
+  return await outletRepository.getAvailableOutlets(roomId);
 });
 
-final outletValueProvider = StateProvider<OutletModel?>((ref) => null);
+final outletValueProvider = StateProvider<int?>((ref) => null);
 
 final deviceTypeListProvider = Provider<List<DeviceModel>>((ref) {
-  return const [
+  return [
     DeviceModel(
+      id: 'ac_type',
       iconOption: FlickyAnimatedIconOptions.ac,
       label: 'Air\nConditioning',
       isSelected: false,
       outlet: 0
     ),
     DeviceModel(
+      id: 'personal_item_type',
       iconOption: FlickyAnimatedIconOptions.hairdryer,
-      label: 'Personal/nItem',
+      label: 'Personal\nItem',
       isSelected: false,
       outlet: 0
     ),
     DeviceModel(
+      id: 'fan_type',
       iconOption: FlickyAnimatedIconOptions.fan,
       label: 'Fan',
       isSelected: false,
       outlet: 0
     ),
     DeviceModel(
+      id: 'light_fixture_type',
       iconOption: FlickyAnimatedIconOptions.lightbulb,
       label: 'Light\nFixture',
       isSelected: false,
       outlet: 0
     ),
     DeviceModel(
+      id: 'other_type',
       iconOption: FlickyAnimatedIconOptions.bolt,
       label: 'Other',
       isSelected: false,
