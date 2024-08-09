@@ -4,7 +4,6 @@ import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
 import 'package:home_automation/helpers/utils.dart';
 import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
-import 'package:flutter/material.dart';
 
 class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
   final Ref ref;
@@ -22,7 +21,6 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
   }
 
   void toggleDevice(DeviceModel selectedDevice) async {
-
     state = [
       for(final device in state)
         if (device == selectedDevice) 
@@ -34,8 +32,6 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
     ref.read(selectedDeviceProvider.notifier).state = state.where((d) => d.outlet == selectedDevice.outlet).first;
   }
 
-
-
   void addDevice(DeviceModel device) {
     state = [
       ...state, device
@@ -46,56 +42,65 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
     return state.any((d) => d.label.trim().toLowerCase() == deviceName.trim().toLowerCase());
   }
 
-  void showDeviceDetails(DeviceModel device) async {
+  Future<void> showDeviceDetails(DeviceModel device) async {
+    if (_isNavigating) return;
+    _isNavigating = true;
+
     print("Showing details for device: ${device.toJson()}");
     if (device.id.isEmpty) {
       print("Warning: Device ID is empty. Full device data: ${device.toJson()}");
+      _isNavigating = false;
       return;
     }
     
-    // Update the selectedDeviceProvider immediately
     ref.read(selectedDeviceProvider.notifier).state = device;
     
     print("Fetching detailed device information");
     final detailedDevice = await ref.read(deviceRepositoryProvider).getDeviceDetails(device.id);
     
     print("Updating selected device with detailed information: ${detailedDevice.toJson()}");
-    if (detailedDevice != null && detailedDevice.id.isNotEmpty) {
-      // Update the selectedDeviceProvider with the detailed device information
+    if (detailedDevice.id.isNotEmpty) {
       ref.read(selectedDeviceProvider.notifier).state = detailedDevice;
       
       if (Utils.isMobile()) {
         print("Attempting to navigate to DeviceDetailsPage");
-        // Use a delay to ensure the provider is updated before navigation
-        Future.microtask(() {
-          try {
-            GoRouter.of(Utils.mainNav.currentContext!).pushNamed(
-              DeviceDetailsPage.route,
-              extra: detailedDevice,
-            );
-            print("Navigation to DeviceDetailsPage successful");
-          } catch (e) {
-            print("Error navigating to DeviceDetailsPage: $e");
-          }
-        });
+        try {
+          await GoRouter.of(Utils.mainNav.currentContext!).pushNamed(
+            DeviceDetailsPage.route,
+            extra: detailedDevice,
+          );
+          print("Navigation to DeviceDetailsPage successful");
+        } catch (e) {
+          print("Error navigating to DeviceDetailsPage: $e");
+        }
       } else {
         print("Not navigating: Not on mobile");
       }
     } else {
-      print("Error: Detailed device is null or has an empty ID. Full device data: ${detailedDevice?.toJson()}");
+      print("Error: Detailed device has an empty ID. Full device data: ${detailedDevice.toJson()}");
     }
+
+    _isNavigating = false;
   }
 
-  void removeDevice(DeviceModel deviceData) {
+  Future<void> removeDevice(DeviceModel deviceData) async {
+    try {
+      await ref.read(deviceRepositoryProvider).removeDevice(deviceData.id);
+      
+      state = [
+        for(final device in state)
+          if (device.id != deviceData.id)
+            device
+      ];
 
-    if (Utils.isMobile()) {
-      GoRouter.of(Utils.mainNav.currentContext!).pop();
+      if (Utils.isMobile()) {
+        GoRouter.of(Utils.mainNav.currentContext!).pop();
+      }
+
+      ref.read(selectedDeviceProvider.notifier).state = null;
+    } catch (e) {
+      print('Error removing device: $e');
+      Utils.showMessageOnSnack('Error removing device', 'Please try again');
     }
-
-    state = [
-      for(final device in state)
-        if (device != deviceData)
-          device
-    ];
   }
 }

@@ -38,7 +38,7 @@ class _DeviceDetailsPageState extends ConsumerState<DeviceDetailsPage> {
         child: SafeArea(
           child: DeviceDetailsPanel(device: deviceData),
         ),
-      )
+      ),
     );
   }
 }

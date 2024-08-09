@@ -56,4 +56,14 @@ class DevicesRepository {
     print("Device details: ${device.toJson()}");
     return device;
   }
+
+  Future<void> removeDevice(String deviceId) async {
+    try {
+      await ref.read(firestoreServiceProvider).removeDevice(deviceId);
+      print("Removed device with ID: $deviceId");
+    } catch (e) {
+      print('Error in removeDevice: $e');
+      throw Exception('Failed to remove device');
+    }
+  }
 }

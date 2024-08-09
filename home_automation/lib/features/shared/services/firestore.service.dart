@@ -35,6 +35,10 @@ class FirestoreService {
     return await _firestore.collection('devices').add(deviceData);
   }
 
+  Future<void> removeDevice(String deviceId) async {
+    await _firestore.collection(_collection).doc(deviceId).delete();
+  }
+
   Future<List<OutletModel>> getOutlets() async {
     final snapshot = await _firestore.collection('outlets').get();
     return snapshot.docs.map((doc) => OutletModel.fromJson(doc.data())).toList();

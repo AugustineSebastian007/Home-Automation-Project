@@ -34,14 +34,20 @@ class DeviceDetailsPanel extends ConsumerWidget {
               )
             )
           ].animate(
-            interval: 200.ms,
-          ).slideY(
-            begin: 0.5, end: 0,
-            duration: 0.5.seconds,
-            curve: Curves.easeInOut,
-          ).fadeIn(
-            duration: 0.5.seconds,
-            curve: Curves.easeInOut,
+            effects: [
+              SlideEffect(
+                begin: const Offset(0, 0.5),
+                end: Offset.zero,
+                duration: 0.5.seconds,
+                curve: Curves.easeInOut,
+              ),
+              FadeEffect(
+                begin: 0,
+                end: 1,
+                duration: 0.5.seconds,
+                curve: Curves.easeInOut,
+              ),
+            ],
           ),
         ),
       );
@@ -50,120 +56,96 @@ class DeviceDetailsPanel extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final selectionColor = device.isSelected ? colorScheme.primary : colorScheme.secondary;
 
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: HomeAutomationStyles.mediumPadding,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Device ID: ${device.id}'),
-                  HomeAutomationStyles.smallVGap,
-                  Text('Label: ${device.label}'),
-                  HomeAutomationStyles.smallVGap,
-                  Text('Outlet: ${device.outlet}'),
-                  HomeAutomationStyles.smallVGap,
-                  Text('Icon: ${device.iconOption.name}'),
-                  HomeAutomationStyles.mediumVGap,
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
-                      color: selectionColor.withOpacity(0.125)
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: HomeAutomationStyles.smallPadding,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    FlickyAnimatedIcons(
-                                      key: ValueKey(device.iconOption),
-                                      icon: device.iconOption,
-                                      size: FlickyAnimatedIconSizes.x2large,
-                                      isSelected: device.isSelected,
-                                    ),
-                                    Text(device.label,
-                                      style: Theme.of(context).textTheme.headlineMedium!.
-                                      copyWith(
-                                        color: selectionColor
-                                      )
-                                    ),
-                                  ],
-                                ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        
+                        HomeAutomationStyles.mediumVGap,
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
+                              color: selectionColor.withOpacity(0.125)
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FlickyAnimatedIcons(
+                                    key: ValueKey(device.iconOption),
+                                    icon: device.iconOption,
+                                    size: FlickyAnimatedIconSizes.x2large,
+                                    isSelected: device.isSelected,
+                                  ),
+                                  Text(device.label,
+                                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                                      color: selectionColor
+                                    )
+                                  ),
+                                  HomeAutomationStyles.mediumVGap,
+                                  isDeviceSaving
+                                    ? const CircularProgressIndicator()
+                                    : GestureDetector(
+                                        onTap: () {
+                                          ref.read(deviceListVMProvider.notifier).toggleDevice(device);
+                                        },
+                                        child: Icon(
+                                          device.isSelected ? Icons.toggle_on : Icons.toggle_off,
+                                          color: selectionColor,
+                                          size: HomeAutomationStyles.x2largeIconSize,
+                                        ),
+                                      ),
+                                ],
                               ),
                             ),
-                            Expanded(
-                              child: isDeviceSaving ?
-                                const Padding(
-                                  padding: HomeAutomationStyles.largePadding,
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: HomeAutomationStyles.largeIconSize, 
-                                      height: HomeAutomationStyles.largeIconSize,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: HomeAutomationStyles.smallSize,
-                                      )
-                                    ),
-                                  ),
-                                )
-                              : 
-                                GestureDetector(
-                                  onTap: () {
-                                    ref.read(deviceListVMProvider.notifier).toggleDevice(device);
-                                  },
-                                  child: Icon(
-                                    device.isSelected ? Icons.toggle_on : 
-                                    Icons.toggle_off,
-                                    color: selectionColor,
-                                    size: HomeAutomationStyles.x2largeIconSize,
-                                  ),
-                                ),
-                            )
-                          ].animate(
-                            interval: 100.ms
-                          ).slideY(
-                            begin: 0.5, end: 0,
-                            duration: 0.5.seconds,
-                            curve: Curves.easeInOut,
-                          ).fadeIn(
-                            duration: 0.5.seconds,
-                            curve: Curves.easeInOut,
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                ].animate(
-                  interval: 100.ms
-                ).slideY(
-                  begin: 0.5, end: 0,
-                  duration: 0.5.seconds,
-                  curve: Curves.easeInOut,
-                ).fadeIn(
-                  duration: 0.5.seconds,
-                  curve: Curves.easeInOut,
-                ),
+                  HomeAutomationStyles.mediumVGap,
+                  ElevatedButton(
+                    onPressed: !device.isSelected && !isDeviceSaving
+                      ? () async {
+                          await ref.read(deviceListVMProvider.notifier).removeDevice(device);
+                        }
+                      : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text('Remove This Device')
+                  )
+                ],
+              ).animate(
+                effects: [
+                  SlideEffect(
+                    begin: const Offset(0, 0.5),
+                    end: Offset.zero,
+                    duration: 0.5.seconds,
+                    curve: Curves.easeInOut,
+                  ),
+                  FadeEffect(
+                    begin: 0,
+                    end: 1,
+                    duration: 0.5.seconds,
+                    curve: Curves.easeInOut,
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        HomeAutomationStyles.mediumVGap,
-        ElevatedButton(
-          onPressed: !device.isSelected && !isDeviceSaving ? () {
-            ref.read(deviceListVMProvider.notifier).removeDevice(device);
-          } : null, 
-          child: const Text('Remove This Device')
-        )
-      ],
+        );
+      }
     );
   }
 }

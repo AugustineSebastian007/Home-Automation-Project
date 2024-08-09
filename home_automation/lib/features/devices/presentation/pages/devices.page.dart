@@ -13,32 +13,26 @@ import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
 import 'package:home_automation/helpers/utils.dart';
 
-class DevicesPage extends ConsumerWidget {
-
+class DevicesPage extends ConsumerStatefulWidget {
   static const String route = '/devices';
 
   const DevicesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDevice = ref.watch(selectedDeviceProvider);
+  ConsumerState<DevicesPage> createState() => _DevicesPageState();
+}
 
-    ref.listen<DeviceModel?>(selectedDeviceProvider, (previous, next) {
-      if (next != null && Utils.isMobile() && previous?.id != next.id) {
-        print("Device selected, navigating to details page");
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) {
-            GoRouter.of(context).pushNamed(
-              DeviceDetailsPage.route,
-              extra: next,
-            );
-          }
-        });
-      }
+class _DevicesPageState extends ConsumerState<DevicesPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(deviceListVMProvider.notifier).fetchDevices();
     });
+  }
 
-    ref.read(deviceListVMProvider.notifier).fetchDevices();
-
+  @override
+  Widget build(BuildContext context) {
     final config = DeviceDetailsResponsiveConfig.deviceDetailsConfig(context);
 
     return Column(
