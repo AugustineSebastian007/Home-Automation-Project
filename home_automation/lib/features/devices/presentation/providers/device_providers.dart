@@ -34,3 +34,7 @@ final selectedDeviceProvider = StateProvider<DeviceModel?>((ref) => null);
 final deviceToggleVMProvider = StateNotifierProvider<DeviceToggleViewModel, bool>((ref) {
   return DeviceToggleViewModel(false, ref);
 });
+
+final selectedDeviceStreamProvider = StreamProvider.family<DeviceModel, String>((ref, deviceId) {
+  return ref.watch(deviceRepositoryProvider).listenToDevice(deviceId);
+});

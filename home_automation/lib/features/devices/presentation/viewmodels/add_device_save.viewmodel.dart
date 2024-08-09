@@ -22,12 +22,16 @@ class AddDeviceSaveViewModel extends StateNotifier<AddDeviceStates> {
     final outlet = ref.read(outletValueProvider);
     final deviceType = ref.read(deviceTypeSelectionVMProvider.notifier).getSelectedDeviceType();
 
+    // Generate a unique id
+    final String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
+
     ref.read(deviceListVMProvider.notifier).addDevice(
       DeviceModel(
+        id: uniqueId,
         iconOption: deviceType.iconOption,
         label: label,
         isSelected: false,
-        outlet: outlet!.id, // Use directly if outlet is an int
+        outlet: outlet ?? 0,
       )
     );
 

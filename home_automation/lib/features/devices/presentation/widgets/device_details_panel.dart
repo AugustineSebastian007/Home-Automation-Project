@@ -5,20 +5,22 @@ import 'package:home_automation/features/devices/presentation/providers/device_p
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:home_automation/features/devices/data/models/device.model.dart';
 
 class DeviceDetailsPanel extends ConsumerWidget {
-  const DeviceDetailsPanel({super.key});
+  final DeviceModel device;
+  const DeviceDetailsPanel({super.key, required this.device});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
-    Widget? returningWidget;
-
     final isDeviceSaving = ref.watch(deviceToggleVMProvider);
-    var deviceData = ref.watch(selectedDeviceProvider);
+
+    final deviceData = device;
+
+    print("Device data in DeviceDetailsPanel: ${deviceData?.toJson()}");
 
     if (deviceData == null) {
-      returningWidget = Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -32,111 +34,149 @@ class DeviceDetailsPanel extends ConsumerWidget {
               )
             )
           ].animate(
-            interval: 200.ms,
-          ).slideY(
-            begin: 0.5, end: 0,
-            duration: 0.5.seconds,
-            curve: Curves.easeInOut,
-          ).fadeIn(
-            duration: 0.5.seconds,
-            curve: Curves.easeInOut,
+            effects: [
+              SlideEffect(
+                begin: const Offset(0, 0.5),
+                end: Offset.zero,
+                duration: 0.5.seconds,
+                curve: Curves.easeInOut,
+              ),
+              FadeEffect(
+                begin: 0,
+                end: 1,
+                duration: 0.5.seconds,
+                curve: Curves.easeInOut,
+              ),
+            ],
           ),
         ),
       );
-      return returningWidget;
     }
 
     final colorScheme = Theme.of(context).colorScheme;
     final selectionColor = deviceData.isSelected ? colorScheme.primary : colorScheme.secondary;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
-              color: selectionColor.withOpacity(0.125)
-            ),
-            child: Center(
-              child: Padding(
-                padding: HomeAutomationStyles.smallPadding,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FlickyAnimatedIcons(
-                              key: ValueKey(deviceData.iconOption),
-                              icon: deviceData.iconOption,
-                              size: FlickyAnimatedIconSizes.x2large,
-                              isSelected: deviceData.isSelected,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        
+                        HomeAutomationStyles.mediumVGap,
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
+                              color: selectionColor.withOpacity(0.125)
                             ),
-                            Text(deviceData.label,
-                              style: Theme.of(context).textTheme.headlineMedium!.
-                              copyWith(
-                                color: selectionColor
-                              )
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FlickyAnimatedIcons(
+                                    key: ValueKey(deviceData.iconOption),
+                                    icon: deviceData.iconOption,
+                                    size: FlickyAnimatedIconSizes.x2large,
+                                    isSelected: deviceData.isSelected,
+                                  ),
+                                  Text(deviceData.label,
+                                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                                      color: selectionColor
+                                    )
+                                  ),
+                                  HomeAutomationStyles.mediumVGap,
+                                  isDeviceSaving
+                                    ? const CircularProgressIndicator()
+                                    : GestureDetector(
+                                        onTap: () async {
+                                          await ref.read(deviceToggleVMProvider.notifier).toggleDevice(deviceData);
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Padding(
+                                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                                  child: Text(
+                                                    'Device toggled',
+                                                    style: TextStyle(fontSize: 16),
+                                                  ),
+                                                ),
+                                                duration: Duration(seconds: 2),
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                margin: EdgeInsets.all(16),
+                                                animation: CurvedAnimation(
+                                                  parent: AnimationController(
+                                                    vsync: ScaffoldMessenger.of(context),
+                                                    duration: Duration(milliseconds: 300),
+                                                  )..forward(),
+                                                  curve: Curves.easeOutCubic,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: Icon(
+                                          deviceData.isSelected ? Icons.toggle_on : Icons.toggle_off,
+                                          color: selectionColor,
+                                          size: HomeAutomationStyles.x2largeIconSize,
+                                        ),
+                                      ),
+                                ],
+                              ),
                             ),
-                          ],
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                  HomeAutomationStyles.mediumVGap,
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: ElevatedButton(
+                        onPressed: !deviceData.isSelected && !isDeviceSaving
+                          ? () async {
+                              await ref.read(deviceListVMProvider.notifier).removeDevice(deviceData);
+                            }
+                          : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Remove This Device')
                       ),
                     ),
-                    Expanded(
-                      child: isDeviceSaving ?
-                        const Padding(
-                          padding: HomeAutomationStyles.largePadding,
-                          child: Center(
-                            child: SizedBox(
-                              width: HomeAutomationStyles.largeIconSize, 
-                              height: HomeAutomationStyles.largeIconSize,
-                              child: CircularProgressIndicator(
-                                strokeWidth: HomeAutomationStyles.smallSize,
-                              )
-                            ),
-                          ),
-                        )
-                      : 
-                        GestureDetector(
-                          onTap: () {
-                            ref.read(deviceListVMProvider.notifier).toggleDevice(deviceData);
-                          },
-                          child: Icon(
-                            deviceData.isSelected ? Icons.toggle_on : 
-                            Icons.toggle_off,
-                            color: selectionColor,
-                            size: HomeAutomationStyles.x2largeIconSize,
-                          ),
-                        ),
-                    )
-                  ].animate(
-                    interval: 100.ms
-                  ).slideY(
-                    begin: 0.5, end: 0,
-                    duration: 0.5.seconds,
-                    curve: Curves.easeInOut,
-                  ).fadeIn(
+                  )
+                ],
+              ).animate(
+                effects: [
+                  SlideEffect(
+                    begin: const Offset(0, 0.5),
+                    end: Offset.zero,
                     duration: 0.5.seconds,
                     curve: Curves.easeInOut,
                   ),
-                ),
+                  FadeEffect(
+                    begin: 0,
+                    end: 1,
+                    duration: 0.5.seconds,
+                    curve: Curves.easeInOut,
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        HomeAutomationStyles.mediumVGap,
-        ElevatedButton(
-          onPressed: !deviceData.isSelected && !isDeviceSaving ? () {
-            ref.read(deviceListVMProvider.notifier).removeDevice(deviceData);
-          } : null, 
-          child: const Text('Remove This Device')
-        )
-      ],
+        );
+      }
     );
   }
 }

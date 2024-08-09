@@ -11,16 +11,17 @@ class DeviceToggleViewModel extends StateNotifier<bool> {
   DeviceToggleViewModel(super.state, this.ref);
 
   Future<void> toggleDevice(DeviceModel selectedDevice) async {
-
     state = true;
-    if (selectedDevice.outlet >= 0) {
+    final updatedDevice = selectedDevice.copyWith(isSelected: !selectedDevice.isSelected);
+    final response = await ref.read(deviceServiceProvider).toggleDevice(updatedDevice);
+    
+    if (response.success) {
       await Future.delayed(500.milliseconds);
-      final response = await ref.read(deviceServiceProvider).toggleDevice(selectedDevice);
-      
-      if (response.success) {
-        ref.read(saveAddDeviceVMProvider.notifier).saveDeviceList();
-        ref.read(deviceListVMProvider.notifier).toggleDevice(selectedDevice);
-      }
+      await ref.read(deviceRepositoryProvider).updateDevice(updatedDevice);
+      ref.read(selectedDeviceProvider.notifier).state = updatedDevice;
+      print("Device toggled successfully: ${updatedDevice.toJson()}");
+    } else {
+      print("Failed to toggle device: ${response.statusCode}");
     }
     state = false;
   }

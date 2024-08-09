@@ -7,16 +7,32 @@ import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/devices/presentation/widgets/devices_list.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+// import 'package:go_router/go_router.dart';
+// import 'package:home_automation/features/devices/data/models/device.model.dart';
+// import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
+// import 'package:home_automation/helpers/utils.dart';
 
-class DevicesPage extends ConsumerWidget {
-
+class DevicesPage extends ConsumerStatefulWidget {
   static const String route = '/devices';
 
   const DevicesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DevicesPage> createState() => _DevicesPageState();
+}
 
+class _DevicesPageState extends ConsumerState<DevicesPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(deviceListVMProvider.notifier).fetchDevices();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final config = DeviceDetailsResponsiveConfig.deviceDetailsConfig(context);
 
     return Column(
@@ -34,13 +50,27 @@ class DevicesPage extends ConsumerWidget {
           visible: config.showSingleLayout,
           replacement: Builder(
             builder: (context) {
-              return const Expanded(
+              final selectedDevice = ref.watch(selectedDeviceProvider);
+              return Expanded(
                 child: Padding(
                   padding: HomeAutomationStyles.mediumPadding,
                   child: Row(
                     children: [
-                      Expanded(child: DevicesList()),
-                      Expanded(child: DeviceDetailsPanel())
+                      const Expanded(child: DevicesList()),
+                      Expanded(
+                        child: selectedDevice != null
+                          ? Consumer(
+                              builder: (context, ref, _) {
+                                final deviceStream = ref.watch(selectedDeviceStreamProvider(selectedDevice.id));
+                                return deviceStream.when(
+                                  data: (device) => DeviceDetailsPanel(device: device),
+                                  loading: () => const Center(child: CircularProgressIndicator()),
+                                  error: (error, stack) => Center(child: Text('Error: $error')),
+                                );
+                              },
+                            )
+                          : const Center(child: Text('No device selected')),
+                      ),
                     ],
                   ),
                 ),
