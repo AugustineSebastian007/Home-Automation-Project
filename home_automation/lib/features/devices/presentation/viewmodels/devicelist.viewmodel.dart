@@ -1,13 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
-import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
 import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
 import 'package:home_automation/helpers/utils.dart';
+import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
+import 'package:flutter/material.dart';
 
 class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
-  
   final Ref ref;
+  bool _isNavigating = false;
+
   DeviceListViewModel(List<DeviceModel> initialState, this.ref) : super(initialState);
 
   Future<void> fetchDevices() async {
@@ -58,7 +60,7 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
     final detailedDevice = await ref.read(deviceRepositoryProvider).getDeviceDetails(device.id);
     
     print("Updating selected device with detailed information: ${detailedDevice.toJson()}");
-    if (detailedDevice.id.isNotEmpty) {
+    if (detailedDevice != null && detailedDevice.id.isNotEmpty) {
       // Update the selectedDeviceProvider with the detailed device information
       ref.read(selectedDeviceProvider.notifier).state = detailedDevice;
       
@@ -67,7 +69,10 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
         // Use a delay to ensure the provider is updated before navigation
         Future.microtask(() {
           try {
-            GoRouter.of(Utils.mainNav.currentContext!).pushNamed(DeviceDetailsPage.route);
+            GoRouter.of(Utils.mainNav.currentContext!).pushNamed(
+              DeviceDetailsPage.route,
+              extra: detailedDevice,
+            );
             print("Navigation to DeviceDetailsPage successful");
           } catch (e) {
             print("Error navigating to DeviceDetailsPage: $e");
@@ -77,7 +82,7 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
         print("Not navigating: Not on mobile");
       }
     } else {
-      print("Error: Detailed device has an empty ID. Full device data: ${detailedDevice.toJson()}");
+      print("Error: Detailed device is null or has an empty ID. Full device data: ${detailedDevice?.toJson()}");
     }
   }
 

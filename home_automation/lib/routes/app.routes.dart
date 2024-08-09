@@ -13,6 +13,7 @@ import 'package:home_automation/features/rooms/presentation/pages/add_room.page.
 import 'package:home_automation/features/rooms/presentation/pages/room_details.page.dart' as details;
 import 'package:home_automation/features/settings/presentation/pages/settings.page.dart';
 import 'package:home_automation/helpers/utils.dart';
+import 'package:home_automation/features/devices/data/models/device.model.dart';
 
 class AppRoutes {
   static final router = GoRouter(
@@ -108,9 +109,11 @@ class AppRoutes {
       ),
       GoRoute(
         parentNavigatorKey: Utils.mainNav,
-        path: DeviceDetailsPage.route,
+        path: '/device_details',
+        name: 'device_details',
         builder: (context, state) {
-          return const DeviceDetailsPage();
+          final device = state.extra as DeviceModel;
+          return DeviceDetailsPage(device: device);
         },
       ),
       GoRoute(

@@ -5,13 +5,34 @@ import 'package:home_automation/features/devices/presentation/providers/device_p
 import 'package:home_automation/features/devices/presentation/widgets/device_row_item.dart';
 import 'package:home_automation/features/shared/widgets/warning_message.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'dart:async';
+import 'package:home_automation/features/devices/data/models/device.model.dart';
 
-class DevicesList extends ConsumerWidget {
+class DevicesList extends ConsumerStatefulWidget {
   const DevicesList({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DevicesList> createState() => _DevicesListState();
+}
 
+class _DevicesListState extends ConsumerState<DevicesList> {
+  Timer? _debounce;
+
+  void _onTapDevice(DeviceModel device) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      ref.read(deviceListVMProvider.notifier).showDeviceDetails(device);
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final devicesList = ref.watch(deviceListVMProvider);
     
     return devicesList.isNotEmpty ? ListView.builder(
@@ -19,15 +40,10 @@ class DevicesList extends ConsumerWidget {
       padding: HomeAutomationStyles.mediumPadding,
       itemBuilder: (context, index) {
         return GestureDetector(
-          onTap: () {
-            print("Selected device: ${devicesList[index].toJson()}");
-            ref.read(deviceListVMProvider.notifier).showDeviceDetails(devicesList[index]);
-          },
+          onTap: () => _onTapDevice(devicesList[index]),
           child: DeviceRowItem(
             device: devicesList[index], 
-            onTapDevice: (device) {
-              ref.read(deviceListVMProvider.notifier).showDeviceDetails(device);
-            }
+            onTapDevice: _onTapDevice,
           ).animate(
             delay: (index * 0.125).seconds,
           ).slideY(

@@ -21,16 +21,23 @@ class DevicesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Add this line at the beginning of the build method
-    ref.read(deviceListVMProvider.notifier).fetchDevices();
+    final selectedDevice = ref.watch(selectedDeviceProvider);
 
     ref.listen<DeviceModel?>(selectedDeviceProvider, (previous, next) {
-      if (next != null && Utils.isMobile()) {
-        Future.microtask(() {
-          GoRouter.of(context).pushNamed(DeviceDetailsPage.route);
+      if (next != null && Utils.isMobile() && previous?.id != next.id) {
+        print("Device selected, navigating to details page");
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            GoRouter.of(context).pushNamed(
+              DeviceDetailsPage.route,
+              extra: next,
+            );
+          }
         });
       }
     });
+
+    ref.read(deviceListVMProvider.notifier).fetchDevices();
 
     final config = DeviceDetailsResponsiveConfig.deviceDetailsConfig(context);
 
