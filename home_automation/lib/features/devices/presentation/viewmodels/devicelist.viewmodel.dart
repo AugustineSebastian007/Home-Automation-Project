@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
@@ -8,8 +9,37 @@ import 'package:home_automation/features/devices/presentation/pages/device_detai
 class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
   final Ref ref;
   bool _isNavigating = false;
+  StreamSubscription<List<DeviceModel>>? _deviceSubscription;
 
-  DeviceListViewModel(List<DeviceModel> initialState, this.ref) : super(initialState);
+  DeviceListViewModel(List<DeviceModel> initialState, this.ref) : super(initialState) {
+    _listenToDevices();
+  }
+
+  void _listenToDevices() {
+    _deviceSubscription?.cancel();
+    _deviceSubscription = ref.read(deviceRepositoryProvider).listenToDevices().listen((devices) {
+      state = devices;
+      print("Devices updated: ${devices.map((d) => d.toJson())}");
+      
+      // Update selectedDeviceProvider if the current selected device has changed
+      final currentSelectedDevice = ref.read(selectedDeviceProvider);
+      if (currentSelectedDevice != null) {
+        final updatedSelectedDevice = devices.firstWhere(
+          (d) => d.id == currentSelectedDevice.id,
+          orElse: () => currentSelectedDevice,
+        );
+        if (updatedSelectedDevice != currentSelectedDevice) {
+          ref.read(selectedDeviceProvider.notifier).state = updatedSelectedDevice;
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _deviceSubscription?.cancel();
+    super.dispose();
+  }
 
   Future<void> fetchDevices() async {
     final devices = await ref.read(deviceRepositoryProvider).getListOfDevices();
@@ -102,5 +132,12 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
       print('Error removing device: $e');
       Utils.showMessageOnSnack('Error removing device', 'Please try again');
     }
+  }
+
+  void updateDevice(DeviceModel updatedDevice) {
+    state = [
+      for (final device in state)
+        if (device.id == updatedDevice.id) updatedDevice else device
+    ];
   }
 }

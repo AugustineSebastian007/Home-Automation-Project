@@ -66,4 +66,22 @@ class DevicesRepository {
       throw Exception('Failed to remove device');
     }
   }
+
+  Future<void> updateDevice(DeviceModel updatedDevice) async {
+    try {
+      await ref.read(firestoreServiceProvider).updateDevice(updatedDevice.toJson());
+      print("Updated device in Firestore: ${updatedDevice.toJson()}");
+    } catch (e) {
+      print('Error in updateDevice: $e');
+      throw Exception('Failed to update device');
+    }
+  }
+
+  Stream<DeviceModel> listenToDevice(String deviceId) {
+    return ref.read(firestoreServiceProvider).listenToDevice(deviceId);
+  }
+
+  Stream<List<DeviceModel>> listenToDevices() {
+    return ref.read(firestoreServiceProvider).listenToDevices();
+  }
 }

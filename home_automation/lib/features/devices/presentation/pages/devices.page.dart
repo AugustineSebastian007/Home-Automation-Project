@@ -8,10 +8,10 @@ import 'package:home_automation/features/devices/presentation/widgets/devices_li
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
 import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
-import 'package:go_router/go_router.dart';
-import 'package:home_automation/features/devices/data/models/device.model.dart';
-import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
-import 'package:home_automation/helpers/utils.dart';
+// import 'package:go_router/go_router.dart';
+// import 'package:home_automation/features/devices/data/models/device.model.dart';
+// import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
+// import 'package:home_automation/helpers/utils.dart';
 
 class DevicesPage extends ConsumerStatefulWidget {
   static const String route = '/devices';
@@ -59,7 +59,16 @@ class _DevicesPageState extends ConsumerState<DevicesPage> {
                       const Expanded(child: DevicesList()),
                       Expanded(
                         child: selectedDevice != null
-                          ? DeviceDetailsPanel(device: selectedDevice)
+                          ? Consumer(
+                              builder: (context, ref, _) {
+                                final deviceStream = ref.watch(selectedDeviceStreamProvider(selectedDevice.id));
+                                return deviceStream.when(
+                                  data: (device) => DeviceDetailsPanel(device: device),
+                                  loading: () => const Center(child: CircularProgressIndicator()),
+                                  error: (error, stack) => Center(child: Text('Error: $error')),
+                                );
+                              },
+                            )
                           : const Center(child: Text('No device selected')),
                       ),
                     ],

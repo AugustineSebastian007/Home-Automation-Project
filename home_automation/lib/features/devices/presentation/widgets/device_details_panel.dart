@@ -9,13 +9,13 @@ import 'package:home_automation/features/devices/data/models/device.model.dart';
 
 class DeviceDetailsPanel extends ConsumerWidget {
   final DeviceModel device;
-
   const DeviceDetailsPanel({super.key, required this.device});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDeviceSaving = ref.watch(deviceToggleVMProvider);
-    final deviceData = ref.watch(selectedDeviceProvider);
+
+    final deviceData = device;
 
     print("Device data in DeviceDetailsPanel: ${deviceData?.toJson()}");
 
@@ -54,7 +54,7 @@ class DeviceDetailsPanel extends ConsumerWidget {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
-    final selectionColor = device.isSelected ? colorScheme.primary : colorScheme.secondary;
+    final selectionColor = deviceData.isSelected ? colorScheme.primary : colorScheme.secondary;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -82,12 +82,12 @@ class DeviceDetailsPanel extends ConsumerWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   FlickyAnimatedIcons(
-                                    key: ValueKey(device.iconOption),
-                                    icon: device.iconOption,
+                                    key: ValueKey(deviceData.iconOption),
+                                    icon: deviceData.iconOption,
                                     size: FlickyAnimatedIconSizes.x2large,
-                                    isSelected: device.isSelected,
+                                    isSelected: deviceData.isSelected,
                                   ),
-                                  Text(device.label,
+                                  Text(deviceData.label,
                                     style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                                       color: selectionColor
                                     )
@@ -96,11 +96,37 @@ class DeviceDetailsPanel extends ConsumerWidget {
                                   isDeviceSaving
                                     ? const CircularProgressIndicator()
                                     : GestureDetector(
-                                        onTap: () {
-                                          ref.read(deviceListVMProvider.notifier).toggleDevice(device);
+                                        onTap: () async {
+                                          await ref.read(deviceToggleVMProvider.notifier).toggleDevice(deviceData);
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Padding(
+                                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                                  child: Text(
+                                                    'Device toggled',
+                                                    style: TextStyle(fontSize: 16),
+                                                  ),
+                                                ),
+                                                duration: Duration(seconds: 2),
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                margin: EdgeInsets.all(16),
+                                                animation: CurvedAnimation(
+                                                  parent: AnimationController(
+                                                    vsync: ScaffoldMessenger.of(context),
+                                                    duration: Duration(milliseconds: 300),
+                                                  )..forward(),
+                                                  curve: Curves.easeOutCubic,
+                                                ),
+                                              ),
+                                            );
+                                          }
                                         },
                                         child: Icon(
-                                          device.isSelected ? Icons.toggle_on : Icons.toggle_off,
+                                          deviceData.isSelected ? Icons.toggle_on : Icons.toggle_off,
                                           color: selectionColor,
                                           size: HomeAutomationStyles.x2largeIconSize,
                                         ),
@@ -114,16 +140,21 @@ class DeviceDetailsPanel extends ConsumerWidget {
                     ),
                   ),
                   HomeAutomationStyles.mediumVGap,
-                  ElevatedButton(
-                    onPressed: !device.isSelected && !isDeviceSaving
-                      ? () async {
-                          await ref.read(deviceListVMProvider.notifier).removeDevice(device);
-                        }
-                      : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: ElevatedButton(
+                        onPressed: !deviceData.isSelected && !isDeviceSaving
+                          ? () async {
+                              await ref.read(deviceListVMProvider.notifier).removeDevice(deviceData);
+                            }
+                          : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Remove This Device')
+                      ),
                     ),
-                    child: const Text('Remove This Device')
                   )
                 ],
               ).animate(
