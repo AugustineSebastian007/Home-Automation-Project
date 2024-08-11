@@ -35,27 +35,31 @@ class _DevicesListState extends ConsumerState<DevicesList> {
   Widget build(BuildContext context) {
     final devicesList = ref.watch(deviceListVMProvider);
     
-    return devicesList.isNotEmpty ? ListView.builder(
-      itemCount: devicesList.length,
-      padding: HomeAutomationStyles.mediumPadding,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () => _onTapDevice(devicesList[index]),
-          child: DeviceRowItem(
-            device: devicesList[index], 
-            onTapDevice: _onTapDevice,
-          ).animate(
-            delay: (index * 0.125).seconds,
-          ).slideY(
-            begin: 0.5, end: 0,
-            duration: 0.5.seconds,
-            curve: Curves.easeInOut
-          ).fadeIn(
-            duration: 0.5.seconds,
-            curve: Curves.easeInOut
-          ),
+    return devicesList.isNotEmpty 
+      ? ListView.builder(
+          itemCount: devicesList.length,
+          padding: HomeAutomationStyles.mediumPadding,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () => _onTapDevice(devicesList[index]),
+              child: DeviceRowItem(
+                device: devicesList[index], 
+                onTapDevice: _onTapDevice,
+              ).animate(
+                delay: (index * 0.125).seconds,
+              ).slideY(
+                begin: 0.5, end: 0,
+                duration: 0.5.seconds,
+                curve: Curves.easeInOut
+              ).fadeIn(
+                duration: 0.5.seconds,
+                curve: Curves.easeInOut
+              ),
+            );
+          },
+        ) 
+      : const Center(
+          child: WarningMessage(message: "No available devices"),
         );
-      },
-    ) : const WarningMessage(message: "No available devices");
   }
 }

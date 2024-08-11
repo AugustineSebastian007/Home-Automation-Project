@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/landing/presentation/providers/landing_providers.dart';
 import 'package:home_automation/features/landing/presentation/widgets/home_page_tile.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeTileOptionsPanel extends ConsumerWidget {
   const HomeTileOptionsPanel({super.key});
@@ -48,12 +49,17 @@ class HomeTileOptionsPanel extends ConsumerWidget {
             scrollDirection: Axis.horizontal,
             children: [
               for(final tile in homeTiles)
-                HomePageTile(
-                  tileOption: tile,
-                  onTap: (selectedTile) {
-                    ref.read(homeTileOptionsVMProvider.notifier).onTileSelected(selectedTile);
-                  }
-                )
+                if (tile.label != 'Test Connection')  // Add this condition
+                  HomePageTile(
+                    tileOption: tile,
+                    onTap: (selectedTile, context) {
+                      if (selectedTile.label == 'Manage Devices') {
+                        context.go('/rooms');
+                      } else {
+                        ref.read(homeTileOptionsVMProvider.notifier).onTileSelected(selectedTile);
+                      }
+                    },
+                  )
             ].animate(
               interval: 200.ms
             ).scaleXY(

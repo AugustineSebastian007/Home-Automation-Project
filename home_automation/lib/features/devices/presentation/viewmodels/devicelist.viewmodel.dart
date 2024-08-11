@@ -115,7 +115,7 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
 
   Future<void> removeDevice(DeviceModel deviceData) async {
     try {
-      await ref.read(deviceRepositoryProvider).removeDevice(deviceData.id);
+      await ref.read(deviceRepositoryProvider).removeDevice(deviceData.roomId, deviceData.outletId, deviceData.id);
       
       state = [
         for(final device in state)

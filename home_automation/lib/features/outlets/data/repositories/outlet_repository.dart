@@ -1,30 +1,28 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
+import 'package:home_automation/features/shared/services/firestore.service.dart';
 
 class OutletRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirestoreService _firestoreService;
+
+  OutletRepository(this._firestoreService);
 
   Future<List<OutletModel>> getOutlets(String roomId) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection('outlets')
-          .where('roomId', isEqualTo: roomId)
-          .get();
-      return querySnapshot.docs
-          .map((doc) => OutletModel.fromJson(doc.data()))
-          .toList();
-    } catch (e) {
-      print('Error fetching outlets: $e');
-      return [];
-    }
+    return await _firestoreService.getOutlets(roomId);
   }
 
-  Future<void> addOutlet(OutletModel outlet) async {
-    try {
-      await _firestore.collection('outlets').doc(outlet.id).set(outlet.toJson());
-    } catch (e) {
-      print('Error adding outlet: $e');
-      throw e;
-    }
+  Future<void> addOutlet(String roomId, OutletModel outlet) async {
+    await _firestoreService.addOutlet(roomId, outlet);
+  }
+
+  Stream<List<OutletModel>> streamOutlets(String roomId) {
+    return _firestoreService.streamOutlets(roomId);
+  }
+
+  Future<void> removeOutlet(String roomId, String outletId) async {
+    await _firestoreService.deleteDocument('outlets', outletId);
+  }
+
+  Future<void> removeAllOutlets(String roomId) async {
+    await _firestoreService.removeAllOutlets(roomId);
   }
 }

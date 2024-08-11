@@ -1,87 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:home_automation/features/devices/presentation/responsiveness/device_details_responsive.config.dart';
-import 'package:home_automation/features/devices/presentation/widgets/device_details_panel.dart';
-import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
+import 'package:go_router/go_router.dart';
+import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+import 'package:home_automation/features/devices/presentation/widgets/device_tile.dart';
+import 'package:home_automation/features/navigation/presentation/widgets/main_appbar.dart';
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
-import 'package:home_automation/features/devices/presentation/widgets/devices_list.dart';
+import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
-import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:home_automation/features/devices/data/models/device.model.dart';
-// import 'package:home_automation/features/devices/presentation/pages/device_details.page.dart';
-// import 'package:home_automation/helpers/utils.dart';
 
-class DevicesPage extends ConsumerStatefulWidget {
-  static const String route = '/devices';
+class DevicesPage extends ConsumerWidget {
+  static const String route = '/devices/:roomId/:outletId';
+  final String roomId;
+  final String outletId;
 
-  const DevicesPage({super.key});
+  const DevicesPage({Key? key, required this.roomId, required this.outletId}) : super(key: key);
 
   @override
-  ConsumerState<DevicesPage> createState() => _DevicesPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final devicesAsyncValue = ref.watch(deviceListStreamProvider((roomId: roomId, outletId: outletId)));
 
-class _DevicesPageState extends ConsumerState<DevicesPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(deviceListVMProvider.notifier).fetchDevices();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final config = DeviceDetailsResponsiveConfig.deviceDetailsConfig(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const MainPageHeader(
-          icon: FlickyAnimatedIcons(
-            icon: FlickyAnimatedIconOptions.bardevices,
-            size: FlickyAnimatedIconSizes.large,
-            isSelected: true,
-          ),
-          title: 'My Devices',
+    return Scaffold(
+      appBar: HomeAutomationAppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/room-details/$roomId');
+          },
         ),
-        Visibility(
-          visible: config.showSingleLayout,
-          replacement: Builder(
-            builder: (context) {
-              final selectedDevice = ref.watch(selectedDeviceProvider);
-              return Expanded(
-                child: Padding(
-                  padding: HomeAutomationStyles.mediumPadding,
-                  child: Row(
-                    children: [
-                      const Expanded(child: DevicesList()),
-                      Expanded(
-                        child: selectedDevice != null
-                          ? Consumer(
-                              builder: (context, ref, _) {
-                                final deviceStream = ref.watch(selectedDeviceStreamProvider(selectedDevice.id));
-                                return deviceStream.when(
-                                  data: (device) => DeviceDetailsPanel(device: device),
-                                  loading: () => const Center(child: CircularProgressIndicator()),
-                                  error: (error, stack) => Center(child: Text('Error: $error')),
-                                );
-                              },
-                            )
-                          : const Center(child: Text('No device selected')),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
+        title: 'Devices',
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const MainPageHeader(
+            icon: FlickyAnimatedIcons(
+              icon: FlickyAnimatedIconOptions.bardevices,
+              size: FlickyAnimatedIconSizes.large,
+              isSelected: true,
+            ),
+            title: 'My Devices',
           ),
-          child: const Expanded(
-            child: DevicesList()
+          Expanded(
+            child: devicesAsyncValue.when(
+              data: (devices) => ListView.builder(
+                itemCount: devices.length,
+                padding: HomeAutomationStyles.mediumPadding,
+                itemBuilder: (context, index) {
+                  final device = devices[index];
+                  return DeviceTile(device: device);
+                },
+              ),
+              loading: () => Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

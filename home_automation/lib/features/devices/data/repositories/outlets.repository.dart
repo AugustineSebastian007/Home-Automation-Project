@@ -1,13 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:home_automation/features/devices/data/models/outlet.model.dart';
-import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
+import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
+import 'package:home_automation/features/shared/services/firestore.service.dart';
 
 class OutletsRepository {
-  final Ref ref;
-  OutletsRepository(this.ref);
+  final FirestoreService _firestoreService;
+  OutletsRepository(this._firestoreService);
 
-  Future<List<OutletModel>> getAvailableOutlets(String roomId) async {
-    final firestoreService = ref.read(firestoreServiceProvider);
-    return await firestoreService.getOutlets();
+  Future<List<OutletModel>> getOutlets(String roomId) {
+    return _firestoreService.getOutlets(roomId);
   }
 }

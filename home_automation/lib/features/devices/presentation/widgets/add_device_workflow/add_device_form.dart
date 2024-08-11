@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:home_automation/features/devices/data/models/outlet.model.dart';
+import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
 import 'package:home_automation/features/devices/presentation/widgets/add_device_workflow/device_type_selection_panel.dart';
 import 'package:home_automation/styles/flicky_icons_icons.dart';
@@ -24,14 +24,14 @@ class AddDeviceForm extends ConsumerWidget {
 
     final deviceNameCtrl = ref.read(deviceNameFieldProvider);
     final isFormValid = ref.watch(formValidationProvider);
-    final roomListAsyncValue = ref.watch(roomListStreamProvider);
+    final userRoomsAsyncValue = ref.watch(userRoomsProvider);
     final selectedRoom = ref.watch(roomValueProvider) as RoomModel?;
     final outletListAsyncValue = selectedRoom != null
         ? ref.watch(outletListProvider(selectedRoom.id))
         : const AsyncValue<List<OutletModel>>.loading();
     final selectedOutlet = ref.watch(outletValueProvider);
 
-    return roomListAsyncValue.when(
+    return userRoomsAsyncValue.when(
       data: (rooms) {
         return _buildForm(
           context,
@@ -56,7 +56,7 @@ class AddDeviceForm extends ConsumerWidget {
     WidgetRef ref,
     List<RoomModel> rooms,
     RoomModel? selectedRoom,
-    int? selectedOutlet,
+    String? selectedOutlet,
     ColorScheme colorScheme,
     TextTheme textTheme,
     TextEditingController deviceNameCtrl,
@@ -153,7 +153,7 @@ class AddDeviceForm extends ConsumerWidget {
                       outletListAsyncValue.when(
                         data: (outlets) {
                           return DropdownButtonFormField<OutletModel>(
-                            value: selectedOutlet != null ? outlets.firstWhere((outlet) => outlet.id == selectedOutlet) : null,
+                            value: selectedOutlet != null ? outlets.firstWhereOrNull((outlet) => outlet.id == selectedOutlet) : null,
                             items: outlets.map((outlet) => DropdownMenuItem(
                               value: outlet,
                               child: Text(outlet.label),
@@ -176,14 +176,20 @@ class AddDeviceForm extends ConsumerWidget {
             padding: HomeAutomationStyles.largePadding,
             child: ElevatedButton(
               onPressed: isFormValid ? () async {
-                // final deviceName = ref.read(deviceNameValueProvider);
                 final deviceTypes = ref.read(deviceTypeSelectionVMProvider);
                 final selectedDeviceType = deviceTypes.firstWhereOrNull((device) => device.isSelected);
-                // final selectedOutlet = ref.read(outletValueProvider);
+                final selectedOutlet = ref.read(outletValueProvider);
 
                 if (selectedDeviceType == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Please select a device type')),
+                  );
+                  return;
+                }
+
+                if (selectedOutlet == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please select an outlet')),
                   );
                   return;
                 }

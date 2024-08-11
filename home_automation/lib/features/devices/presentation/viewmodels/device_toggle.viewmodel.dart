@@ -24,7 +24,7 @@ class DeviceToggleViewModel extends StateNotifier<bool> {
       if (response.success) {
         await Future.delayed(500.milliseconds);
         try {
-          await ref.read(deviceRepositoryProvider).updateDevice(updatedDevice);
+          await ref.read(deviceRepositoryProvider).updateDevice(updatedDevice.roomId, updatedDevice.outletId, updatedDevice);
           ref.read(selectedDeviceProvider.notifier).state = updatedDevice;
           
           // Update the device in the device list

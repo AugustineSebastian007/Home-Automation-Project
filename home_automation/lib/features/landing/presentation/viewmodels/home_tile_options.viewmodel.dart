@@ -13,7 +13,6 @@ class HomeTileOptionsViewmodel extends StateNotifier<List<HomeTileOption>> {
   HomeTileOptionsViewmodel(super.state, this.ref);
 
   void onTileSelected(HomeTileOption option) {
-    
     switch(option.option) {
       case HomeTileOptions.addDevice:
         Utils.showUIModal(
@@ -28,7 +27,10 @@ class HomeTileOptionsViewmodel extends StateNotifier<List<HomeTileOption>> {
         break;
       case HomeTileOptions.manageDevices:
         break;
-      case HomeTileOptions.testConnection:
+      // case HomeTileOptions.testConnection:
+      //   break;
+      default:
+        // Do nothing for unhandled options
         break;
     }
   }

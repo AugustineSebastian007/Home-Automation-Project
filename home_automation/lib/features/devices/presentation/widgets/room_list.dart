@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart';
-import 'package:home_automation/features/devices/presentation/widgets/outlet_list.dart';
+import 'package:go_router/go_router.dart';
 
 class RoomList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final roomsAsyncValue = ref.watch(roomListStreamProvider);
+    final userRoomsAsyncValue = ref.watch(userRoomsProvider);
 
     return SizedBox(
       height: 50, // Adjust this value as needed
-      child: roomsAsyncValue.when(
+      child: userRoomsAsyncValue.when(
         data: (rooms) {
           return ListView.builder(
             scrollDirection: Axis.horizontal,
@@ -20,14 +20,7 @@ class RoomList extends ConsumerWidget {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OutletList(roomId: room.id),
-                      ),
-                    );
-                  },
+                  onTap: () => context.push('/room-details/${room.id}'),
                   child: Chip(
                     label: Text(room.name),
                   ),

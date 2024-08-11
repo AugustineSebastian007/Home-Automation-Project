@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:home_automation/features/navigation/presentation/widgets/main_appbar.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/devices/presentation/widgets/devices_list.dart';
@@ -11,6 +12,8 @@ import 'package:home_automation/styles/styles.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/widgets/device_row_item.dart';
 import 'package:home_automation/features/devices/presentation/widgets/device_details_panel.dart';
+import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
+import 'package:home_automation/features/outlets/presentation/providers/outlet_providers.dart';
 
 class RoomDetailsPage extends ConsumerWidget {
   static const String route = '/room-details/:id';
@@ -21,27 +24,19 @@ class RoomDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final roomAsyncValue = ref.watch(roomProvider(roomId));
-
-    // Create dummy devices
-    final dummyDevices = [
-      DeviceModel(
-        id: 'dummy1',
-        label: 'Dummy Device 1',
-        iconOption: FlickyAnimatedIconOptions.lightbulb,
-        isSelected: true,
-        outlet: 1,
-      ),
-      DeviceModel(
-        id: 'dummy2',
-        label: 'Dummy Device 2',
-        iconOption: FlickyAnimatedIconOptions.fan,
-        isSelected: true,
-        outlet: 2,
-      ),
-    ];
+    final roomAsyncValue = ref.watch(roomStreamProvider(roomId));
+    final outletsAsyncValue = ref.watch(outletListStreamProvider(roomId));
 
     return Scaffold(
+      appBar: HomeAutomationAppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/rooms');
+          },
+        ),
+        title: 'Room Details',
+      ),
       body: roomAsyncValue.when(
         data: (room) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,50 +50,83 @@ class RoomDetailsPage extends ConsumerWidget {
               title: room.name,
             ),
             Expanded(
-              child: Padding(
-                padding: HomeAutomationStyles.mediumPadding,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: dummyDevices.length,
-                        itemBuilder: (context, index) {
-                          return DeviceRowItem(
-                            device: dummyDevices[index],
-                            onTapDevice: (device) {
-                              ref.read(selectedDeviceProvider.notifier).state = device;
-                            },
-                          );
-                        },
+              child: outletsAsyncValue.when(
+                data: (outlets) => ListView.builder(
+                  itemCount: outlets.length,
+                  itemBuilder: (context, index) {
+                    final outlet = outlets[index];
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      child: ListTile(
+                        leading: Icon(Icons.power, color: Theme.of(context).colorScheme.primary),
+                        title: Text(outlet.label),
+                        trailing: Icon(Icons.chevron_right),
+                        onTap: () => context.goNamed(
+                          'devices',
+                          pathParameters: {'roomId': room.id, 'outletId': outlet.id},
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: Consumer(
-                        builder: (context, ref, _) {
-                          final selectedDevice = ref.watch(selectedDeviceProvider);
-                          if (selectedDevice != null) {
-                            return DeviceDetailsPanel(device: selectedDevice);
-                          } else {
-                            return const Center(child: Text('No device selected'));
-                          }
-                        },
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
+                loading: () => Center(child: CircularProgressIndicator()),
+                error: (error, stack) => Center(child: Text('Error loading outlets: $error')),
               ),
             ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement add device functionality
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () => context.goNamed('add-outlet', pathParameters: {'roomId': roomId}),
+            child: Icon(Icons.add),
+            heroTag: 'addOutlet',
+          ),
+          SizedBox(width: 16),
+          FloatingActionButton(
+            onPressed: () => _showRemoveOutletDialog(context, ref),
+            child: Icon(Icons.remove),
+            heroTag: 'removeOutlet',
+            backgroundColor: Colors.red,
+          ),
+        ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  void _showRemoveOutletDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Remove Outlet'),
+          content: Text('Are you sure you want to remove an outlet?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Remove'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _removeOutlet(context, ref);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _removeOutlet(BuildContext context, WidgetRef ref) {
+    context.goNamed('remove-outlet', pathParameters: {'roomId': roomId});
   }
 }

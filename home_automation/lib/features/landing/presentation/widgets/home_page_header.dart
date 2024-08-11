@@ -36,7 +36,7 @@ class HomePageHeader extends StatelessWidget {
                   color: Theme.of(context).colorScheme.secondary
                 )
               ),
-              Text('Augustine', 
+              Text('User', 
                 style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.bold

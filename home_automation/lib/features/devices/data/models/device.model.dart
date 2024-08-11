@@ -7,6 +7,8 @@ class DeviceModel {
   final String label;
   final bool isSelected;
   final int outlet;
+  final String roomId; // New property
+  final String outletId; // New property
 
   const DeviceModel({
     required this.id,
@@ -14,6 +16,8 @@ class DeviceModel {
     required this.label,
     required this.isSelected,
     required this.outlet,
+    required this.roomId, // New parameter
+    required this.outletId, // New parameter
   });
 
   DeviceModel copyWith({
@@ -22,6 +26,8 @@ class DeviceModel {
     String? label,
     bool? isSelected,
     int? outlet,
+    String? roomId, // New parameter
+    String? outletId, // New parameter
   }) {
 
     return DeviceModel(
@@ -29,7 +35,9 @@ class DeviceModel {
       iconOption: iconOption ?? this.iconOption,
       label: label ?? this.label,
       isSelected: isSelected ?? this.isSelected,
-      outlet: outlet ?? this.outlet
+      outlet: outlet ?? this.outlet,
+      roomId: roomId ?? this.roomId, // New parameter
+      outletId: outletId ?? this.outletId, // New parameter
     );
   }
 
@@ -39,7 +47,9 @@ class DeviceModel {
       'label': label,
       'iconOption': iconOption.name,
       'isSelected': isSelected,
-      'outlet': outlet
+      'outlet': outlet,
+      'roomId': roomId, // New property
+      'outletId': outletId, // New property
     };
   }
 
@@ -52,7 +62,9 @@ class DeviceModel {
       ),
       label: json['label'] ?? '',
       isSelected: json['isSelected'] ?? false,
-      outlet: json['outlet'] ?? 0
+      outlet: json['outlet'] ?? 0,
+      roomId: json['roomId'] ?? '', // New property
+      outletId: json['outletId'] ?? '', // New property
     );
   }
 }

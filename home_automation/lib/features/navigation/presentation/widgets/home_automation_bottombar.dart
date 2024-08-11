@@ -14,7 +14,7 @@ class HomeAutomationBottomBar extends ConsumerWidget {
 
     final config = LandingPageResponsiveConfig.landingPageConfig(context);
     final barItems = ref.watch(bottomBarVMProvider);
-
+                                
     return Container(
       padding: HomeAutomationStyles.xsmallPadding,
       color: config.bottomBarBg,

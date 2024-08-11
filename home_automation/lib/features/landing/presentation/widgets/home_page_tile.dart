@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/landing/data/models/home_tile_option.dart';
 import 'package:home_automation/styles/styles.dart';
 
 class HomePageTile extends StatelessWidget {
-
-
   final HomeTileOption tileOption;
-  final Function onTap;
+  final Function(HomeTileOption, BuildContext) onTap;
 
   const HomePageTile({
     required this.tileOption,
@@ -23,7 +22,7 @@ class HomePageTile extends StatelessWidget {
         color: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
         child: InkWell(
           onTap: () {
-            onTap(tileOption);
+            onTap(tileOption, context);
           },
           child: Container(
             width: 150,

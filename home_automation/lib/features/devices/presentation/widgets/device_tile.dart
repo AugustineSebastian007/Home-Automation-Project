@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/styles/styles.dart';
 
-class DeviceRowItem extends StatelessWidget {
-
+class DeviceTile extends StatelessWidget {
   final DeviceModel device;
-  final Function onTapDevice;
 
-  const DeviceRowItem({
-    required this.device,
-    required this.onTapDevice,
-    super.key
-  });
+  const DeviceTile({Key? key, required this.device}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final selectedColor = device.isSelected ? Theme.of(context).colorScheme.primary :
-      Theme.of(context).colorScheme.secondary;
+    final selectedColor = device.isSelected
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.secondary;
 
     final bgColor = selectedColor.withOpacity(0.15);
     final splashColor = selectedColor.withOpacity(0.25);
@@ -29,7 +25,9 @@ class DeviceRowItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
         color: bgColor,
         child: InkWell(
-          onTap: () => onTapDevice(device),
+          onTap: () {
+            context.push('/device-details/${device.roomId}/${device.outletId}', extra: device);
+          },
           splashColor: splashColor,
           highlightColor: splashColor,
           child: Padding(
@@ -42,16 +40,12 @@ class DeviceRowItem extends StatelessWidget {
                 ),
                 HomeAutomationStyles.smallHGap,
                 Expanded(
-                  child: Text(device.label,
+                  child: Text(
+                    device.label,
                     style: Theme.of(context).textTheme.labelMedium!.copyWith(
                       color: selectedColor
-                    )
+                    ),
                   ),
-                ),
-                Switch(
-                  value: device.isSelected,
-                  onChanged: (value) => onTapDevice(device),
-                  activeColor: selectedColor,
                 ),
               ],
             ),
