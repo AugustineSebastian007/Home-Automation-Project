@@ -189,16 +189,8 @@ class AddDeviceForm extends ConsumerWidget {
                   return;
                 }
 
-                final newDevice = DeviceModel(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  iconOption: selectedDeviceType.iconOption,
-                  label: deviceName,
-                  isSelected: false,
-                  outlet: selectedOutlet ?? 0,
-                );
-
                 try {
-                  await ref.read(deviceRepositoryProvider).addDevice(newDevice);
+                  await ref.read(saveAddDeviceVMProvider.notifier).saveDevice();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Device added successfully')),
                   );

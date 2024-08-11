@@ -13,34 +13,30 @@ class AddDeviceSaveViewModel extends StateNotifier<AddDeviceStates> {
   AddDeviceSaveViewModel(super.state, this.ref);
 
   Future<void> saveDevice() async {
-
-    state = AddDeviceStates.saving;
-    await Future.delayed(1.seconds);
-
-    // collect the info
     final label = ref.read(deviceNameValueProvider);
+    final deviceType = ref.read(deviceTypeSelectionVMProvider).firstWhere((d) => d.isSelected);
     final outlet = ref.read(outletValueProvider);
-    final deviceType = ref.read(deviceTypeSelectionVMProvider.notifier).getSelectedDeviceType();
+    final existingDevice = ref.read(selectedDeviceProvider);
 
-    // Generate a unique id
-    final String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
-
-    ref.read(deviceListVMProvider.notifier).addDevice(
-      DeviceModel(
-        id: uniqueId,
-        iconOption: deviceType.iconOption,
-        label: label,
-        isSelected: false,
-        outlet: outlet ?? 0,
-      )
+    final DeviceModel deviceToSave = DeviceModel(
+      id: '', // Leave empty for new devices
+      iconOption: deviceType.iconOption,
+      label: label,
+      isSelected: false,
+      outlet: outlet ?? 0,
     );
 
-    final saveSuccess = await saveDeviceList();
-    
-    if (saveSuccess) {
+    try {
+      final newDeviceId = await ref.read(deviceRepositoryProvider).addDevice(deviceToSave);
+      final newDevice = deviceToSave.copyWith(id: newDeviceId);
+      ref.read(deviceListVMProvider.notifier).addDevice(newDevice);
+
       state = AddDeviceStates.saved;
-      await Future.delayed(1.seconds);
-      GoRouter.of(Utils.mainNav.currentContext!).pop();
+      await Future.delayed(const Duration(seconds: 1));
+    } catch (e) {
+      print('Error saving device: $e');
+      state = AddDeviceStates.none;
+      rethrow;
     }
   }
 

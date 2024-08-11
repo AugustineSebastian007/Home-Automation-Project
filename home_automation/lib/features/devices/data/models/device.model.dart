@@ -2,14 +2,14 @@ import 'package:home_automation/helpers/enums.dart';
 
 class DeviceModel {
 
-  final String id; // Add this line
+  final String id;
   final FlickyAnimatedIconOptions iconOption;
   final String label;
   final bool isSelected;
   final int outlet;
 
   const DeviceModel({
-    required this.id, // Add this line
+    required this.id,
     required this.iconOption,
     required this.label,
     required this.isSelected,
@@ -35,7 +35,7 @@ class DeviceModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id, // Add this line
+      'id': id,
       'label': label,
       'iconOption': iconOption.name,
       'isSelected': isSelected,
@@ -45,11 +45,14 @@ class DeviceModel {
 
   factory DeviceModel.fromJson(Map<String, dynamic> json) {
     return DeviceModel(
-      id: json['id'] ?? '', // Add this line
-      iconOption: FlickyAnimatedIconOptions.values.firstWhere((o) => o.name == json['iconOption']),
-      label: json['label'], 
-      isSelected: json['isSelected'], 
-      outlet: json['outlet']
+      id: json['id'] ?? '',
+      iconOption: FlickyAnimatedIconOptions.values.firstWhere(
+        (o) => o.name == json['iconOption'],
+        orElse: () => FlickyAnimatedIconOptions.bolt
+      ),
+      label: json['label'] ?? '',
+      isSelected: json['isSelected'] ?? false,
+      outlet: json['outlet'] ?? 0
     );
   }
 }

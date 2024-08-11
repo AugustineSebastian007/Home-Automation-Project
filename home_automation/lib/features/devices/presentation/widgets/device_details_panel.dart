@@ -15,46 +15,20 @@ class DeviceDetailsPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDeviceSaving = ref.watch(deviceToggleVMProvider);
 
-    final deviceData = device;
+    print("Device data in DeviceDetailsPanel: ${device.toJson()}");
 
-    print("Device data in DeviceDetailsPanel: ${deviceData?.toJson()}");
-
-    if (deviceData == null) {
+    if (device.id.isEmpty || device.id == 'error' || device.id == 'not_found') {
+      print("Warning: Invalid device data in DeviceDetailsPanel");
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.bolt,
-              size: HomeAutomationStyles.largeIconSize,
-              color: Theme.of(context).colorScheme.secondary
-            ),
-            Text('Select device', style: Theme.of(context).textTheme.labelLarge!
-              .copyWith(
-                color: Theme.of(context).colorScheme.secondary
-              )
-            )
-          ].animate(
-            effects: [
-              SlideEffect(
-                begin: const Offset(0, 0.5),
-                end: Offset.zero,
-                duration: 0.5.seconds,
-                curve: Curves.easeInOut,
-              ),
-              FadeEffect(
-                begin: 0,
-                end: 1,
-                duration: 0.5.seconds,
-                curve: Curves.easeInOut,
-              ),
-            ],
-          ),
+        child: Text("Error: Invalid device data. Please try reloading the device list.",
+          style: Theme.of(context).textTheme.bodyLarge,
+          textAlign: TextAlign.center,
         ),
       );
     }
 
     final colorScheme = Theme.of(context).colorScheme;
-    final selectionColor = deviceData.isSelected ? colorScheme.primary : colorScheme.secondary;
+    final selectionColor = device.isSelected ? colorScheme.primary : colorScheme.secondary;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -66,77 +40,61 @@ class DeviceDetailsPanel extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        
-                        HomeAutomationStyles.mediumVGap,
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
-                              color: selectionColor.withOpacity(0.125)
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
+                        color: selectionColor.withOpacity(0.125)
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            FlickyAnimatedIcons(
+                              key: ValueKey(device.iconOption),
+                              icon: device.iconOption,
+                              size: FlickyAnimatedIconSizes.x2large,
+                              isSelected: device.isSelected,
                             ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  FlickyAnimatedIcons(
-                                    key: ValueKey(deviceData.iconOption),
-                                    icon: deviceData.iconOption,
-                                    size: FlickyAnimatedIconSizes.x2large,
-                                    isSelected: deviceData.isSelected,
-                                  ),
-                                  Text(deviceData.label,
-                                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                                      color: selectionColor
-                                    )
-                                  ),
-                                  HomeAutomationStyles.mediumVGap,
-                                  isDeviceSaving
-                                    ? const CircularProgressIndicator()
-                                    : GestureDetector(
-                                        onTap: () async {
-                                          await ref.read(deviceToggleVMProvider.notifier).toggleDevice(deviceData);
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Padding(
-                                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                                  child: Text(
-                                                    'Device toggled',
-                                                    style: TextStyle(fontSize: 16),
-                                                  ),
-                                                ),
-                                                duration: Duration(seconds: 2),
-                                                behavior: SnackBarBehavior.floating,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                                margin: EdgeInsets.all(16),
-                                                animation: CurvedAnimation(
-                                                  parent: AnimationController(
-                                                    vsync: ScaffoldMessenger.of(context),
-                                                    duration: Duration(milliseconds: 300),
-                                                  )..forward(),
-                                                  curve: Curves.easeOutCubic,
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        },
-                                        child: Icon(
-                                          deviceData.isSelected ? Icons.toggle_on : Icons.toggle_off,
-                                          color: selectionColor,
-                                          size: HomeAutomationStyles.x2largeIconSize,
-                                        ),
-                                      ),
-                                ],
-                              ),
+                            Text(device.label,
+                              style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                                color: selectionColor
+                              )
                             ),
-                          ),
+                            HomeAutomationStyles.mediumVGap,
+                            isDeviceSaving
+                              ? const CircularProgressIndicator()
+                              : GestureDetector(
+                                  onTap: () async {
+                                    try {
+                                      await ref.read(deviceToggleVMProvider.notifier).toggleDevice(device);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Device toggled successfully'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error toggling device: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Icon(
+                                    device.isSelected ? Icons.toggle_on : Icons.toggle_off,
+                                    color: selectionColor,
+                                    size: HomeAutomationStyles.x2largeIconSize,
+                                  ),
+                                ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                   HomeAutomationStyles.mediumVGap,
@@ -144,9 +102,9 @@ class DeviceDetailsPanel extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: ElevatedButton(
-                        onPressed: !deviceData.isSelected && !isDeviceSaving
+                        onPressed: !device.isSelected && !isDeviceSaving
                           ? () async {
-                              await ref.read(deviceListVMProvider.notifier).removeDevice(deviceData);
+                              await ref.read(deviceListVMProvider.notifier).removeDevice(device);
                             }
                           : null,
                         style: ElevatedButton.styleFrom(
@@ -156,21 +114,6 @@ class DeviceDetailsPanel extends ConsumerWidget {
                       ),
                     ),
                   )
-                ],
-              ).animate(
-                effects: [
-                  SlideEffect(
-                    begin: const Offset(0, 0.5),
-                    end: Offset.zero,
-                    duration: 0.5.seconds,
-                    curve: Curves.easeInOut,
-                  ),
-                  FadeEffect(
-                    begin: 0,
-                    end: 1,
-                    duration: 0.5.seconds,
-                    curve: Curves.easeInOut,
-                  ),
                 ],
               ),
             ),

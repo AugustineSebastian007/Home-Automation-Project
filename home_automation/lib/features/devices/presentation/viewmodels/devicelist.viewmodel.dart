@@ -63,9 +63,9 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
   }
 
   void addDevice(DeviceModel device) {
-    state = [
-      ...state, device
-    ];
+    print("Adding device to local list: ${device.toJson()}");
+    state = [...state, device];
+    print("Updated local list: ${state.map((d) => d.toJson())}");
   }
 
   bool deviceExists(String deviceName) {
@@ -89,7 +89,7 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
     final detailedDevice = await ref.read(deviceRepositoryProvider).getDeviceDetails(device.id);
     
     print("Updating selected device with detailed information: ${detailedDevice.toJson()}");
-    if (detailedDevice.id.isNotEmpty) {
+    if (detailedDevice.id.isNotEmpty && detailedDevice.id != 'error' && detailedDevice.id != 'not_found') {
       ref.read(selectedDeviceProvider.notifier).state = detailedDevice;
       
       if (Utils.isMobile()) {
@@ -107,7 +107,7 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
         print("Not navigating: Not on mobile");
       }
     } else {
-      print("Error: Detailed device has an empty ID. Full device data: ${detailedDevice.toJson()}");
+      print("Error: Invalid device data. Full device data: ${detailedDevice.toJson()}");
     }
 
     _isNavigating = false;

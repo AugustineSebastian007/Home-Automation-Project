@@ -31,8 +31,16 @@ class FirestoreService {
     return snapshot.docs.map((doc) => DeviceModel.fromJson({...doc.data(), 'id': doc.id})).toList();
   }
 
-  Future<DocumentReference> addDevice(Map<String, dynamic> deviceData) async {
-    return await _firestore.collection('devices').add(deviceData);
+  Future<String> addDevice(Map<String, dynamic> deviceData) async {
+    print("Adding new device to Firestore");
+    final docRef = await _firestore.collection('devices').add(deviceData);
+    print("Added new device to Firestore with ID: ${docRef.id}");
+    
+    // Verify the added device
+    final addedDevice = await docRef.get();
+    print("Verified added device: ${addedDevice.data()}");
+    
+    return docRef.id;
   }
 
   Future<void> removeDevice(String deviceId) async {
@@ -40,7 +48,17 @@ class FirestoreService {
   }
 
   Future<void> updateDevice(Map<String, dynamic> deviceData) async {
-    await _firestore.collection(_collection).doc(deviceData['id']).update(deviceData);
+    print("Updating device with ID: ${deviceData['id']}");
+    final docRef = _firestore.collection(_collection).doc(deviceData['id']);
+    final docSnapshot = await docRef.get();
+    
+    if (docSnapshot.exists) {
+      await docRef.update(deviceData);
+      print("Device updated successfully");
+    } else {
+      print("Device document doesn't exist. Creating a new one.");
+      await docRef.set(deviceData);
+    }
   }
 
   Future<List<OutletModel>> getOutlets() async {
@@ -56,5 +74,9 @@ class FirestoreService {
 
   Stream<DeviceModel> listenToDevice(String deviceId) {
     return _firestore.collection('devices').doc(deviceId).snapshots().map((snapshot) => DeviceModel.fromJson(snapshot.data()!));
+  }
+
+  Future<DocumentSnapshot?> getDeviceById(String deviceId) async {
+    return await _firestore.collection(_collection).doc(deviceId).get();
   }
 }

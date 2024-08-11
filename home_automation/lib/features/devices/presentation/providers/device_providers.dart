@@ -36,5 +36,10 @@ final deviceToggleVMProvider = StateNotifierProvider<DeviceToggleViewModel, bool
 });
 
 final selectedDeviceStreamProvider = StreamProvider.family<DeviceModel, String>((ref, deviceId) {
-  return ref.watch(deviceRepositoryProvider).listenToDevice(deviceId);
+  return ref.watch(deviceRepositoryProvider).listenToDevice(deviceId).map((device) {
+    if (device.id.isEmpty) {
+      return device.copyWith(id: deviceId);
+    }
+    return device;
+  });
 });

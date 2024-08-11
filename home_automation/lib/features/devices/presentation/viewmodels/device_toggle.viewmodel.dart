@@ -12,17 +12,37 @@ class DeviceToggleViewModel extends StateNotifier<bool> {
 
   Future<void> toggleDevice(DeviceModel selectedDevice) async {
     state = true;
-    final updatedDevice = selectedDevice.copyWith(isSelected: !selectedDevice.isSelected);
-    final response = await ref.read(deviceServiceProvider).toggleDevice(updatedDevice);
-    
-    if (response.success) {
-      await Future.delayed(500.milliseconds);
-      await ref.read(deviceRepositoryProvider).updateDevice(updatedDevice);
-      ref.read(selectedDeviceProvider.notifier).state = updatedDevice;
-      print("Device toggled successfully: ${updatedDevice.toJson()}");
-    } else {
-      print("Failed to toggle device: ${response.statusCode}");
+    try {
+      print("Toggling device: ${selectedDevice.toJson()}");
+      if (selectedDevice.id.isEmpty) {
+        throw Exception("Cannot toggle device with empty ID");
+      }
+      final updatedDevice = selectedDevice.copyWith(isSelected: !selectedDevice.isSelected);
+      print("Updated device state: ${updatedDevice.toJson()}");
+      final response = await ref.read(deviceServiceProvider).toggleDevice(updatedDevice);
+      
+      if (response.success) {
+        await Future.delayed(500.milliseconds);
+        try {
+          await ref.read(deviceRepositoryProvider).updateDevice(updatedDevice);
+          ref.read(selectedDeviceProvider.notifier).state = updatedDevice;
+          
+          // Update the device in the device list
+          ref.read(deviceListVMProvider.notifier).updateDevice(updatedDevice);
+          
+          print("Device toggled successfully: ${updatedDevice.toJson()}");
+        } catch (updateError) {
+          print("Error updating device in Firestore: $updateError");
+          // Revert the toggle if update fails
+          ref.read(selectedDeviceProvider.notifier).state = selectedDevice;
+        }
+      } else {
+        print("Failed to toggle device: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error in toggleDevice: $e");
+    } finally {
+      state = false;
     }
-    state = false;
   }
 }
