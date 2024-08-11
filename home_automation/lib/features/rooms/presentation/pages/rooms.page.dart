@@ -4,7 +4,6 @@ import 'package:home_automation/features/shared/widgets/flicky_animated_icons.da
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/rooms/presentation/widgets/rooms_list.dart';
 import 'package:home_automation/helpers/enums.dart';
-import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart';
 import 'package:go_router/go_router.dart';
 
 class RoomsPage extends ConsumerWidget {
@@ -14,8 +13,6 @@ class RoomsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.read(roomListStreamProvider);
-
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

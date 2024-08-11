@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';

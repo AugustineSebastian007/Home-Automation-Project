@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart';
 import 'package:home_automation/features/shared/widgets/warning_message.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:home_automation/features/rooms/presentation/widgets/room_tile.dart';
 
 class RoomsList extends ConsumerWidget {
   const RoomsList({super.key});
@@ -21,22 +22,9 @@ class RoomsList extends ConsumerWidget {
               padding: HomeAutomationStyles.mediumPadding,
               itemBuilder: (context, index) {
                 final room = rooms[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    leading: Icon(Icons.room, color: Colors.grey),
-                    title: Text(room.name),
-                    subtitle: Text('${room.deviceCount} Devices'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.air, color: Colors.green),
-                        SizedBox(width: 8),
-                        Icon(Icons.lightbulb_outline, color: Colors.grey),
-                      ],
-                    ),
-                    onTap: () => context.push('/room-details/${room.id}'),
-                  ),
+                return RoomTile(
+                  room: room,
+                  onTap: () => context.push('/room-details/${room.id}'),
                 ).animate(
                   delay: (index * 0.125).seconds,
                 ).slideY(

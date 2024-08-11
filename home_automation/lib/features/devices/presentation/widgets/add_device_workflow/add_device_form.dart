@@ -5,7 +5,6 @@ import 'package:home_automation/features/devices/presentation/providers/add_devi
 import 'package:home_automation/features/devices/presentation/widgets/add_device_workflow/device_type_selection_panel.dart';
 import 'package:home_automation/styles/flicky_icons_icons.dart';
 import 'package:home_automation/styles/styles.dart';
-import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:collection/collection.dart';
 import 'package:home_automation/features/rooms/data/models/room.model.dart';
 import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart';
@@ -177,10 +176,10 @@ class AddDeviceForm extends ConsumerWidget {
             padding: HomeAutomationStyles.largePadding,
             child: ElevatedButton(
               onPressed: isFormValid ? () async {
-                final deviceName = ref.read(deviceNameValueProvider);
+                // final deviceName = ref.read(deviceNameValueProvider);
                 final deviceTypes = ref.read(deviceTypeSelectionVMProvider);
                 final selectedDeviceType = deviceTypes.firstWhereOrNull((device) => device.isSelected);
-                final selectedOutlet = ref.read(outletValueProvider);
+                // final selectedOutlet = ref.read(outletValueProvider);
 
                 if (selectedDeviceType == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
