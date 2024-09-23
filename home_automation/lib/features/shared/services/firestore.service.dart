@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:home_automation/features/profiling/data/models/profile.model.dart';
 import 'package:home_automation/features/rooms/data/models/room.model.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
@@ -217,15 +218,23 @@ class FirestoreService {
         .map((snapshot) => DeviceModel.fromJson(snapshot.data()!));
   }
 
-  Stream<List<DeviceModel>> listenToDevices() {
+  Stream<List<DeviceModel>> streamAllDevices() {
     return _firestore
         .collection('users')
         .doc(userId)
-        .collection('devices')
+        .collection('rooms')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => DeviceModel.fromJson(doc.data()))
-            .toList());
+        .asyncMap((roomSnapshot) async {
+      List<DeviceModel> allDevices = [];
+      for (var roomDoc in roomSnapshot.docs) {
+        final outletSnapshot = await roomDoc.reference.collection('outlets').get();
+        for (var outletDoc in outletSnapshot.docs) {
+          final deviceSnapshot = await outletDoc.reference.collection('devices').get();
+          allDevices.addAll(deviceSnapshot.docs.map((doc) => DeviceModel.fromJson(doc.data())));
+        }
+      }
+      return allDevices;
+    });
   }
 
   Future<List<DeviceModel>> getListOfDevices() async {
@@ -253,6 +262,35 @@ class FirestoreService {
     }
   }
 
+  Stream<List<DeviceModel>> listenToDevices() {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('rooms')
+        .snapshots()
+        .asyncMap((roomSnapshot) async {
+      List<DeviceModel> allDevices = [];
+      for (var roomDoc in roomSnapshot.docs) {
+        final outletSnapshot = await roomDoc.reference.collection('outlets').get();
+        for (var outletDoc in outletSnapshot.docs) {
+          final deviceSnapshot = await outletDoc.reference.collection('devices').snapshots().first;
+          allDevices.addAll(deviceSnapshot.docs.map((doc) => DeviceModel.fromJson(doc.data())));
+        }
+      }
+      return allDevices;
+    });
+  }
+
+  Future<ProfileModel> getProfile(String profileId) async {
+    final doc = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('profiles')
+        .doc(profileId)
+        .get();
+    return ProfileModel.fromJson(doc.data()!);
+  }
+
   Future<void> deleteDocument(String collection, String documentId) async {
     try {
       await _firestore.collection(collection).doc(documentId).delete();
@@ -270,4 +308,52 @@ class FirestoreService {
         .delete();
   }
 
+  // Profiles
+  Stream<List<ProfileModel>> streamProfiles() {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('profiles')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ProfileModel.fromJson(doc.data()))
+            .toList());
+  }
+
+  Stream<ProfileModel> streamProfile(String profileId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('profiles')
+        .doc(profileId)
+        .snapshots()
+        .map((snapshot) => ProfileModel.fromJson(snapshot.data()!));
+  }
+
+  Future<void> addProfile(ProfileModel profile) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('profiles')
+        .doc(profile.id)
+        .set(profile.toJson());
+  }
+
+  Future<void> updateProfile(ProfileModel profile) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('profiles')
+        .doc(profile.id)
+        .update(profile.toJson());
+  }
+
+  Future<void> deleteProfile(String profileId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('profiles')
+        .doc(profileId)
+        .delete();
+  }
 }

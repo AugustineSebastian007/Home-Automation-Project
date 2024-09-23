@@ -6,11 +6,13 @@ import 'package:home_automation/styles/styles.dart';
 class DeviceRowItem extends StatelessWidget {
 
   final DeviceModel device;
-  final Function onTapDevice;
+  final Function(DeviceModel) onTapDevice;
+  final Function(bool) onToggle;
 
   const DeviceRowItem({
     required this.device,
     required this.onTapDevice,
+    required this.onToggle,
     super.key
   });
 
@@ -50,7 +52,7 @@ class DeviceRowItem extends StatelessWidget {
                 ),
                 Switch(
                   value: device.isSelected,
-                  onChanged: (value) => onTapDevice(device),
+                  onChanged: onToggle,
                   activeColor: selectedColor,
                 ),
               ],

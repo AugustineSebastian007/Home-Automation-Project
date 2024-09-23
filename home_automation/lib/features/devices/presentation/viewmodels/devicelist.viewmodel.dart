@@ -50,16 +50,10 @@ class DeviceListViewModel extends StateNotifier<List<DeviceModel>> {
     state = devices;
   }
 
-  void toggleDevice(DeviceModel selectedDevice) async {
-    state = [
-      for(final device in state)
-        if (device == selectedDevice) 
-          device.copyWith(isSelected: !device.isSelected)
-        else  
-          device
-    ];
-
-    ref.read(selectedDeviceProvider.notifier).state = state.where((d) => d.outlet == selectedDevice.outlet).first;
+  void toggleDevice(DeviceModel selectedDevice) {
+    final updatedDevice = selectedDevice.copyWith(isSelected: !selectedDevice.isSelected);
+    state = state.map((device) => device.id == updatedDevice.id ? updatedDevice : device).toList();
+    ref.read(selectedDeviceProvider.notifier).state = updatedDevice;
   }
 
   void addDevice(DeviceModel device) {

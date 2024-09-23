@@ -40,11 +40,19 @@ class _DevicesListState extends ConsumerState<DevicesList> {
           itemCount: devicesList.length,
           padding: HomeAutomationStyles.mediumPadding,
           itemBuilder: (context, index) {
+            final device = devicesList[index];
             return GestureDetector(
-              onTap: () => _onTapDevice(devicesList[index]),
+              onTap: () => _onTapDevice(device),
               child: DeviceRowItem(
-                device: devicesList[index], 
+                device: device, 
                 onTapDevice: _onTapDevice,
+                onToggle: (bool value) {
+                  ref.read(deviceRepositoryProvider).updateDevice(
+                    device.roomId,
+                    device.outletId,
+                    device.copyWith(isSelected: value),
+                  );
+                },
               ).animate(
                 delay: (index * 0.125).seconds,
               ).slideY(

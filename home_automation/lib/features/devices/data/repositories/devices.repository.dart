@@ -42,4 +42,8 @@ class DevicesRepository {
   Stream<List<DeviceModel>> streamDevices(String roomId, String outletId) {
     return _firestoreService.streamDevices(roomId, outletId);
   }
+
+  Stream<List<DeviceModel>> streamAllDevices() {
+    return _firestoreService.streamAllDevices();
+  }
 }

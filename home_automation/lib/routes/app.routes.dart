@@ -18,6 +18,8 @@ import 'package:home_automation/helpers/utils.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/outlets/presentation/pages/add_outlet_page.dart';
 import 'package:home_automation/features/profiling/presentation/pages/profiling.page.dart';
+import 'package:home_automation/features/profiling/presentation/pages/add_profile.page.dart';
+import 'package:home_automation/features/profiling/presentation/pages/profile_details.page.dart';
 
 class AppRoutes {
   static final router = GoRouter(
@@ -117,6 +119,16 @@ class AppRoutes {
         name: 'remove-room',
         path: '/remove-room',
         builder: (context, state) => RemoveRoomPage(),
+      ),
+      GoRoute(
+        path: AddProfilePage.route,
+        builder: (context, state) => AddProfilePage(),
+      ),
+      GoRoute(
+        path: ProfileDetailsPage.route,
+        builder: (context, state) => ProfileDetailsPage(
+          profileId: state.pathParameters['id']!,
+        ),
       ),
     ],
   );
