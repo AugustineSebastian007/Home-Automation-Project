@@ -112,3 +112,29 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+icons_launcher:
+  image_path: "assets/icon/icon.png"
+  platforms:
+    android:
+      enable: true
+      image_path: "assets/icon/icon.png"
+      adaptive_background_color: '#FFFFFF'
+      adaptive_foreground_image: "assets/icon/icon_foreground.png"
+      adaptive_round_image: "assets/icon/icon_round.png"
+    ios:
+      enable: true
+      image_path: "assets/icon/icon.png"
+    web:
+      enable: true
+      image_path: "assets/icon/icon.png"
+      favicon_path: "assets/icon/favicon.png"
+    macos:
+      enable: true
+      image_path: "assets/icon/icon.png"
+    windows:
+      enable: true
+      image_path: "assets/icon/icon.png"
+    linux:
+      enable: true
+      image_path: "assets/icon/icon.png"
