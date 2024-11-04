@@ -66,12 +66,6 @@ class RoomDetailsPage extends ConsumerWidget {
                 error: (error, stack) => Center(child: Text('Error loading outlets: $error')),
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                context.push('/dummy-main-hall');
-              },
-              child: Text('Dummy Main Hall'),
-            ),
           ],
         ),
         loading: () => Center(child: CircularProgressIndicator()),

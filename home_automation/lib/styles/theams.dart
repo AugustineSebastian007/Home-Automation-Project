@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:home_automation/styles/colors.dart';
 import 'package:home_automation/styles/styles.dart';
 
+
 class HomeAutomationTheam {
   static ThemeData dark = ThemeData(
     canvasColor: Colors.transparent,

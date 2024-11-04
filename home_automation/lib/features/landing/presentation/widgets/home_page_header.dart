@@ -4,14 +4,16 @@ import 'package:home_automation/features/landing/presentation/responsiveness/lan
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePageHeader extends StatelessWidget {
   const HomePageHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     final config = LandingPageResponsiveConfig.landingPageConfig(context);
+    final user = FirebaseAuth.instance.currentUser;
+    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
 
     return Padding(
       padding: HomeAutomationStyles.mediumPadding.copyWith(
@@ -36,7 +38,7 @@ class HomePageHeader extends StatelessWidget {
                   color: Theme.of(context).colorScheme.secondary
                 )
               ),
-              Text('User', 
+              Text(userName, 
                 style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.bold

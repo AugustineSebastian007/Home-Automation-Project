@@ -5,7 +5,7 @@ import 'package:home_automation/firebase_options.dart';
 import 'package:home_automation/routes/app.routes.dart';
 import 'package:home_automation/styles/theams.dart';
 import 'package:firebase_database/firebase_database.dart';
-
+import 'package:home_automation/features/settings/presentation/pages/settings.page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,15 +28,17 @@ void main() async {
   runApp(const ProviderScope(child: HomeAutomationApp()));
 }
 
-class HomeAutomationApp extends StatelessWidget {
+class HomeAutomationApp extends ConsumerWidget {
   const HomeAutomationApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    
     return MaterialApp.router(
       theme: HomeAutomationTheam.light,
       darkTheme: HomeAutomationTheam.dark,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       debugShowCheckedModeBanner: false,
       routeInformationProvider: AppRoutes.router.routeInformationProvider,
       routeInformationParser: AppRoutes.router.routeInformationParser,

@@ -4,6 +4,9 @@ import 'package:home_automation/features/shared/widgets/flicky_animated_icons.da
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+final themeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
 
 class SettingsPage extends ConsumerWidget {
   static const String route = '/settings';
@@ -12,8 +15,21 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final colorScheme = Theme.of(context).colorScheme;
-    // final textTheme = Theme.of(context).textTheme;
+    final currentTheme = ref.watch(themeProvider);
+    final user = FirebaseAuth.instance.currentUser;
+    final userEmail = user?.email ?? 'No email found';
+    final userName = user?.displayName ?? 'No name set';
+    
+    String getThemeString(ThemeMode mode) {
+      switch (mode) {
+        case ThemeMode.light:
+          return 'Light';
+        case ThemeMode.dark:
+          return 'Dark';
+        case ThemeMode.system:
+          return 'System Default';
+      }
+    }
 
     return Scaffold(
       body: Column(
@@ -37,7 +53,49 @@ class SettingsPage extends ConsumerWidget {
                   Icons.settings,
                   [
                     _buildSettingsTile(context, 'Language', 'English', Icons.language),
-                    _buildSettingsTile(context, 'Theme', 'System Default', Icons.palette),
+                    _buildSettingsTile(
+                      context, 
+                      'Theme', 
+                      getThemeString(currentTheme), 
+                      Icons.palette,
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Select Theme'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  title: const Text('Light'),
+                                  leading: const Icon(Icons.light_mode),
+                                  onTap: () {
+                                    ref.read(themeProvider.notifier).state = ThemeMode.light;
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                                ListTile(
+                                  title: const Text('Dark'),
+                                  leading: const Icon(Icons.dark_mode),
+                                  onTap: () {
+                                    ref.read(themeProvider.notifier).state = ThemeMode.dark;
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                                ListTile(
+                                  title: const Text('System Default'),
+                                  leading: const Icon(Icons.settings_system_daydream),
+                                  onTap: () {
+                                    ref.read(themeProvider.notifier).state = ThemeMode.system;
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     _buildSettingsTile(context, 'Notifications', 'On', Icons.notifications),
                   ],
                 ),
@@ -47,9 +105,8 @@ class SettingsPage extends ConsumerWidget {
                   'Account',
                   Icons.account_circle,
                   [
-                    _buildSettingsTile(context, 'Profile', 'Augustine', Icons.person),
-                    _buildSettingsTile(context, 'Email', 'augustine@example.com', Icons.email),
-                    _buildSettingsTile(context, 'Password', '********', Icons.lock),
+                    _buildSettingsTile(context, 'Profile', userName, Icons.person),
+                    _buildSettingsTile(context, 'Email', userEmail, Icons.email),
                   ],
                 ),
                 HomeAutomationStyles.mediumVGap,
@@ -97,7 +154,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSettingsTile(BuildContext context, String title, String value, IconData icon) {
+  Widget _buildSettingsTile(BuildContext context, String title, String value, IconData icon, {VoidCallback? onTap}) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final brightness = Theme.of(context).brightness;
@@ -133,8 +190,8 @@ class SettingsPage extends ConsumerWidget {
                 color: colorScheme.secondary,
                 size: HomeAutomationStyles.smallIconSize,
               ),
-        onTap: () {
-          // TODO: Implement settings action
+        onTap: onTap ?? () {
+          // Default empty implementation
         },
       ),
     );
