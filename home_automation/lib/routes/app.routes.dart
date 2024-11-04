@@ -21,6 +21,8 @@ import 'package:home_automation/features/profiling/presentation/pages/profiling.
 import 'package:home_automation/features/profiling/presentation/pages/add_profile.page.dart';
 import 'package:home_automation/features/profiling/presentation/pages/profile_details.page.dart';
 
+import '../features/rooms/presentation/pages/dummy_main_hall.page.dart';
+
 class AppRoutes {
   static final router = GoRouter(
     routerNeglect: true,
@@ -129,6 +131,10 @@ class AppRoutes {
         builder: (context, state) => ProfileDetailsPage(
           profileId: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/dummy-main-hall',
+        builder: (context, state) => DummyMainHallPage(),
       ),
     ],
   );

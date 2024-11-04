@@ -3,11 +3,9 @@ import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 import 'package:home_automation/features/devices/data/repositories/devices.repository.dart';
 import 'package:home_automation/features/outlets/data/repositories/outlet_repository.dart';
-import 'package:home_automation/features/outlets/data/repositories/outlet_repository.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/devicelist.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_type.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_save.viewmodel.dart';
-import 'package:home_automation/features/devices/presentation/viewmodels/add_device_form.viewmodel.dart';
 import 'package:home_automation/features/shared/services/firestore.service.dart';
 import 'package:home_automation/helpers/enums.dart'; // Adjust the path as needed
 import 'package:flutter/material.dart';

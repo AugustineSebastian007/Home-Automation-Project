@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 import 'package:home_automation/features/outlets/presentation/providers/outlet_providers.dart';
-import 'package:home_automation/features/outlets/presentation/pages/outlet_page.dart';
 import 'package:home_automation/features/navigation/presentation/widgets/main_appbar.dart';
 import 'package:home_automation/styles/styles.dart';
 

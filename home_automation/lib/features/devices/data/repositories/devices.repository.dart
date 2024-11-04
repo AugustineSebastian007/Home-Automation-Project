@@ -1,6 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/shared/services/firestore.service.dart';
+import 'package:home_automation/helpers/enums.dart';
+import 'package:home_automation/features/rooms/data/models/room.model.dart';
+import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 
 class DevicesRepository {
   final FirestoreService _firestoreService;
@@ -45,5 +47,122 @@ class DevicesRepository {
 
   Stream<List<DeviceModel>> streamAllDevices() {
     return _firestoreService.streamAllDevices();
+  }
+
+  Future<void> ensureMainRoomExists() async {
+    const String mainRoomId = 'main_room';
+    const String mainOutletId = 'esp32';
+
+    // Check if the main room exists
+    final mainRoom = await _firestoreService.getRoom(mainRoomId);
+    if (mainRoom == null) {
+      // Create the main room
+      final newRoom = RoomModel(
+        id: mainRoomId,
+        name: 'Main Room',
+        deviceCount: 5,
+      );
+      await _firestoreService.addRoom(newRoom);
+
+      // Create the main outlet
+      final newOutlet = OutletModel(
+        id: mainOutletId,
+        label: 'ESP32',
+        ip: '192.168.1.100',
+        roomId: mainRoomId,
+      );
+      await _firestoreService.addOutlet(mainRoomId, newOutlet);
+
+      // Create the devices
+      await getMainRoomDevices();
+    }
+  }
+
+  Future<List<DeviceModel>> getMainRoomDevices() async {
+    const String mainRoomId = 'main_room';
+    const String mainOutletId = 'esp32';
+
+    final existingDevices = await _firestoreService.getDevices(mainRoomId, mainOutletId);
+    if (existingDevices.isNotEmpty) {
+      return existingDevices;
+    }
+
+    final devices = [
+      DeviceModel(
+        id: 'light1',
+        iconOption: FlickyAnimatedIconOptions.lightbulb,
+        label: 'Light 1',
+        isSelected: false,
+        outlet: 1,
+        roomId: mainRoomId,
+        outletId: mainOutletId,
+      ),
+      DeviceModel(
+        id: 'light2',
+        iconOption: FlickyAnimatedIconOptions.lightbulb,
+        label: 'Light 2',
+        isSelected: false,
+        outlet: 2,
+        roomId: mainRoomId,
+        outletId: mainOutletId,
+      ),
+      DeviceModel(
+        id: 'light3',
+        iconOption: FlickyAnimatedIconOptions.lightbulb,
+        label: 'Light 3',
+        isSelected: false,
+        outlet: 3,
+        roomId: mainRoomId,
+        outletId: mainOutletId,
+      ),
+      DeviceModel(
+        id: 'light4',
+        iconOption: FlickyAnimatedIconOptions.lightbulb,
+        label: 'Light 4',
+        isSelected: false,
+        outlet: 4,
+        roomId: mainRoomId,
+        outletId: mainOutletId,
+      ),
+      DeviceModel(
+        id: 'fan',
+        iconOption: FlickyAnimatedIconOptions.fan,
+        label: 'Fan',
+        isSelected: false,
+        outlet: 5,
+        roomId: mainRoomId,
+        outletId: mainOutletId,
+      ),
+    ];
+
+    for (var device in devices) {
+      await _firestoreService.addDevice(mainRoomId, mainOutletId, device);
+    }
+
+    return devices;
+  }
+
+  Stream<DeviceModel> streamMainRoomDevice(String deviceId) {
+    return _firestoreService.streamDevice('main_room', 'esp32', deviceId);
+  }
+
+  Stream<List<DeviceModel>> streamMainRoomDevices() {
+    return _firestoreService.streamDevices('main_room', 'esp32');
+  }
+
+  Future<void> ensureMainRoomDevices(String roomId, String outletId) async {
+    final existingDevices = await _firestoreService.getDevices(roomId, outletId);
+    if (existingDevices.isEmpty) {
+      final devices = [
+        DeviceModel(id: 'light1', iconOption: FlickyAnimatedIconOptions.lightbulb, label: 'Light 1', isSelected: false, outlet: 1, roomId: roomId, outletId: outletId),
+        DeviceModel(id: 'light2', iconOption: FlickyAnimatedIconOptions.lightbulb, label: 'Light 2', isSelected: false, outlet: 2, roomId: roomId, outletId: outletId),
+        DeviceModel(id: 'light3', iconOption: FlickyAnimatedIconOptions.lightbulb, label: 'Light 3', isSelected: false, outlet: 3, roomId: roomId, outletId: outletId),
+        DeviceModel(id: 'light4', iconOption: FlickyAnimatedIconOptions.lightbulb, label: 'Light 4', isSelected: false, outlet: 4, roomId: roomId, outletId: outletId),
+        DeviceModel(id: 'fan', iconOption: FlickyAnimatedIconOptions.fan, label: 'Fan', isSelected: false, outlet: 5, roomId: roomId, outletId: outletId),
+      ];
+      for (var device in devices) {
+        await _firestoreService.addDevice(roomId, outletId, device);
+      }
+    }
   }
 }

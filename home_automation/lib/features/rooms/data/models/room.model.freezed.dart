@@ -23,6 +23,7 @@ mixin _$RoomModel {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   int get deviceCount => throw _privateConstructorUsedError;
+  OutletModel? get defaultOutlet => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -35,7 +36,10 @@ abstract class $RoomModelCopyWith<$Res> {
   factory $RoomModelCopyWith(RoomModel value, $Res Function(RoomModel) then) =
       _$RoomModelCopyWithImpl<$Res, RoomModel>;
   @useResult
-  $Res call({String id, String name, int deviceCount});
+  $Res call(
+      {String id, String name, int deviceCount, OutletModel? defaultOutlet});
+
+  $OutletModelCopyWith<$Res>? get defaultOutlet;
 }
 
 /// @nodoc
@@ -54,6 +58,7 @@ class _$RoomModelCopyWithImpl<$Res, $Val extends RoomModel>
     Object? id = null,
     Object? name = null,
     Object? deviceCount = null,
+    Object? defaultOutlet = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -68,7 +73,23 @@ class _$RoomModelCopyWithImpl<$Res, $Val extends RoomModel>
           ? _value.deviceCount
           : deviceCount // ignore: cast_nullable_to_non_nullable
               as int,
+      defaultOutlet: freezed == defaultOutlet
+          ? _value.defaultOutlet
+          : defaultOutlet // ignore: cast_nullable_to_non_nullable
+              as OutletModel?,
     ) as $Val);
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $OutletModelCopyWith<$Res>? get defaultOutlet {
+    if (_value.defaultOutlet == null) {
+      return null;
+    }
+
+    return $OutletModelCopyWith<$Res>(_value.defaultOutlet!, (value) {
+      return _then(_value.copyWith(defaultOutlet: value) as $Val);
+    });
   }
 }
 
@@ -80,7 +101,11 @@ abstract class _$$RoomModelImplCopyWith<$Res>
       __$$RoomModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String name, int deviceCount});
+  $Res call(
+      {String id, String name, int deviceCount, OutletModel? defaultOutlet});
+
+  @override
+  $OutletModelCopyWith<$Res>? get defaultOutlet;
 }
 
 /// @nodoc
@@ -97,6 +122,7 @@ class __$$RoomModelImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? deviceCount = null,
+    Object? defaultOutlet = freezed,
   }) {
     return _then(_$RoomModelImpl(
       id: null == id
@@ -111,6 +137,10 @@ class __$$RoomModelImplCopyWithImpl<$Res>
           ? _value.deviceCount
           : deviceCount // ignore: cast_nullable_to_non_nullable
               as int,
+      defaultOutlet: freezed == defaultOutlet
+          ? _value.defaultOutlet
+          : defaultOutlet // ignore: cast_nullable_to_non_nullable
+              as OutletModel?,
     ));
   }
 }
@@ -118,7 +148,11 @@ class __$$RoomModelImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$RoomModelImpl implements _RoomModel {
-  _$RoomModelImpl({required this.id, required this.name, this.deviceCount = 0});
+  _$RoomModelImpl(
+      {required this.id,
+      required this.name,
+      this.deviceCount = 0,
+      this.defaultOutlet});
 
   factory _$RoomModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$RoomModelImplFromJson(json);
@@ -130,10 +164,12 @@ class _$RoomModelImpl implements _RoomModel {
   @override
   @JsonKey()
   final int deviceCount;
+  @override
+  final OutletModel? defaultOutlet;
 
   @override
   String toString() {
-    return 'RoomModel(id: $id, name: $name, deviceCount: $deviceCount)';
+    return 'RoomModel(id: $id, name: $name, deviceCount: $deviceCount, defaultOutlet: $defaultOutlet)';
   }
 
   @override
@@ -144,12 +180,15 @@ class _$RoomModelImpl implements _RoomModel {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.deviceCount, deviceCount) ||
-                other.deviceCount == deviceCount));
+                other.deviceCount == deviceCount) &&
+            (identical(other.defaultOutlet, defaultOutlet) ||
+                other.defaultOutlet == defaultOutlet));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, deviceCount);
+  int get hashCode =>
+      Object.hash(runtimeType, id, name, deviceCount, defaultOutlet);
 
   @JsonKey(ignore: true)
   @override
@@ -169,7 +208,8 @@ abstract class _RoomModel implements RoomModel {
   factory _RoomModel(
       {required final String id,
       required final String name,
-      final int deviceCount}) = _$RoomModelImpl;
+      final int deviceCount,
+      final OutletModel? defaultOutlet}) = _$RoomModelImpl;
 
   factory _RoomModel.fromJson(Map<String, dynamic> json) =
       _$RoomModelImpl.fromJson;
@@ -180,6 +220,8 @@ abstract class _RoomModel implements RoomModel {
   String get name;
   @override
   int get deviceCount;
+  @override
+  OutletModel? get defaultOutlet;
   @override
   @JsonKey(ignore: true)
   _$$RoomModelImplCopyWith<_$RoomModelImpl> get copyWith =>

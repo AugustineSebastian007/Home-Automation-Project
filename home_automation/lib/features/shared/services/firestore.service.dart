@@ -347,7 +347,6 @@ class FirestoreService {
         .doc(profile.id)
         .update(profile.toJson());
   }
-
   Future<void> deleteProfile(String profileId) async {
     await _firestore
         .collection('users')

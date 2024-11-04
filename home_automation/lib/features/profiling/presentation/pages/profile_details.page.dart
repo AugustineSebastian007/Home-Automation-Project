@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
@@ -112,14 +111,63 @@ class ProfileDetailsPage extends ConsumerWidget {
     ref.read(deviceToggleVMProvider.notifier).toggleDevice(device);
   }
 
-  void _toggleAllDevices(BuildContext context, WidgetRef ref, String profileId, bool value) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Toggling all devices...'),
-        duration: Duration(seconds: 2),
+  void _toggleAllDevices(BuildContext context, WidgetRef ref, String profileId, bool value) async {
+    // Show initial loading snackbar
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.clearSnackBars(); // Clear any existing snackbars
+    
+    final loadingSnackBar = SnackBar(
+      content: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          SizedBox(width: 16),
+          Text('Toggling all devices...'),
+        ],
       ),
+      duration: Duration(seconds: 15), // Longer duration as we're processing
     );
-    ref.read(profileRepositoryProvider).toggleAllDevicesInProfile(profileId, value, ref);
+    
+    scaffoldMessenger.showSnackBar(loadingSnackBar);
+    
+    try {
+      await ref.read(profileRepositoryProvider).toggleAllDevicesInProfile(profileId, value, ref);
+      
+      if (context.mounted) {
+        scaffoldMessenger.clearSnackBars();
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('All devices ${value ? 'activated' : 'deactivated'} successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        scaffoldMessenger.clearSnackBars();
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('Some devices failed to toggle'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'RETRY',
+              textColor: Colors.white,
+              onPressed: () => _toggleAllDevices(context, ref, profileId, value),
+            ),
+          ),
+        );
+        // Refresh the profile to ensure UI is in sync
+        ref.refresh(profileWithDevicesProvider(profileId));
+      }
+    }
   }
 
   void _showAddDeviceDialog(BuildContext context, WidgetRef ref, String profileId) {

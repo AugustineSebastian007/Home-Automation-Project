@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Control</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; }
+        .device { margin-bottom: 20px; }
+        .toggle { appearance: none; width: 60px; height: 30px; background: #ddd; border-radius: 15px; position: relative; cursor: pointer; }
+        .toggle:checked { background: #4CAF50; }
+        .toggle::before { content: ''; position: absolute; width: 26px; height: 26px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .toggle:checked::before { left: 32px; }
+        label { display: inline-block; width: 100px; }
+        #fanControl { width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>Smart Home Control</h1>
+    <div class="device">
+        <label for="device1">Device 1:</label>
+        <input type="checkbox" id="device1" class="toggle">
+    </div>
+    <div class="device">
+        <label for="device2">Device 2:</label>
+        <input type="checkbox" id="device2" class="toggle">
+    </div>
+    <div class="device">
+        <label for="device3">Device 3:</label>
+        <input type="checkbox" id="device3" class="toggle">
+    </div>
+    <div class="device">
+        <label for="device4">Device 4:</label>
+        <input type="checkbox" id="device4" class="toggle">
+    </div>
+    <div class="device">
+        <label for="fanControl">Fan Speed:</label>
+        <input type="range" id="fanControl" min="0" max="5" value="0">
+        <span id="fanSpeed">0</span>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyALytw5DzSOWXSKdMJgRqTthL4IeowTDxc",
+            authDomain: "audrino-test-b579f.firebaseapp.com",
+            databaseURL: "https://home-automation-78d43-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "audrino-test-b579f",
+            storageBucket: "audrino-test-b579f.appspot.com",
+            messagingSenderId: "872253796110",
+            appId: "1:872253796110:web:bc95c78cf47ad1e10ff15f"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Function to initialize Firebase data
+        function initializeFirebaseData() {
+            const initialData = {
+                temperature: 0,
+                humidity: 0,
+                devices: {
+                    relay1: false,
+                    relay2: false,
+                    relay3: false,
+                    relay4: false,
+                    fan: {
+                        speed: 0,
+                        power: false
+                    }
+                }
+            };
+
+            const dbRef = ref(database, 'outlets/living_room');
+            
+            set(dbRef, initialData)
+                .then(() => {
+                    console.log("Database initialized successfully");
+                })
+                .catch((error) => {
+                    console.error("Error initializing database:", error.message);
+                    // Attempt to read the data if writing fails
+                    return get(dbRef);
+                })
+                .then((snapshot) => {
+                    if (snapshot && snapshot.exists()) {
+                        console.log("Existing data:", snapshot.val());
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error reading database:", error.message);
+                });
+        }
+
+        // Call the initialization function
+        initializeFirebaseData();
+
+        // Function to update Firebase
+        function updateFirebase(device, value) {
+            const outletRef = ref(database, 'outlets/living_room/devices/' + device);
+            set(outletRef, value);
+        }
+
+        // Device toggles
+        for (let i = 1; i <= 4; i++) {
+            const device = document.getElementById(`device${i}`);
+            device.addEventListener('change', (e) => {
+                updateFirebase(`relay${i}`, e.target.checked);
+            });
+        }
+
+        // Fan control
+        const fanControl = document.getElementById('fanControl');
+        const fanSpeed = document.getElementById('fanSpeed');
+        fanControl.addEventListener('input', (e) => {
+            const speed = parseInt(e.target.value);
+            fanSpeed.textContent = speed;
+            updateFirebase('fan/speed', speed);
+            updateFirebase('fan/power', speed > 0);
+        });
+
+        // Listen for changes from Firebase
+        const outletRef = ref(database, 'outlets/living_room/devices');
+        for (let i = 1; i <= 4; i++) {
+            onValue(ref(database, `outlets/living_room/devices/relay${i}`), (snapshot) => {
+                document.getElementById(`device${i}`).checked = snapshot.val();
+            });
+        }
+        onValue(ref(database, 'outlets/living_room/devices/fan/speed'), (snapshot) => {
+            const speed = snapshot.val();
+            fanControl.value = speed;
+            fanSpeed.textContent = speed;
+        });
+    </script>
+</body>
+</html>

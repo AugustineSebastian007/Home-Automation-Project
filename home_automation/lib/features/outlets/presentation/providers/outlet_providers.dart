@@ -11,3 +11,8 @@ final outletListStreamProvider = StreamProvider.family<List<OutletModel>, String
   final repository = ref.read(outletRepositoryProvider);
   return repository.streamOutlets(roomId);
 });
+
+final mainOutletProvider = FutureProvider<OutletModel>((ref) async {
+  final repository = ref.read(outletRepositoryProvider);
+  return await repository.getMainOutlet();
+});

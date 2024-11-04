@@ -4,6 +4,7 @@ import 'package:home_automation/features/devices/data/repositories/devices.repos
 import 'package:home_automation/features/devices/presentation/viewmodels/device_toggle.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/devicelist.viewmodel.dart';
 import 'package:home_automation/features/shared/services/firestore.service.dart';
+import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart' show mainRoomProvider;
 
 final firestoreServiceProvider = Provider((ref) => FirestoreService());
 
@@ -47,6 +48,25 @@ final selectedDeviceStreamProvider = StreamProvider.family<DeviceModel, String>(
 });
 
 final deviceStreamProvider = StreamProvider.family<DeviceModel, ({String roomId, String outletId, String deviceId})>((ref, params) {
-final repository = ref.read(deviceRepositoryProvider);
-return repository.streamDevice(params.roomId, params.outletId, params.deviceId);
+  final repository = ref.read(deviceRepositoryProvider);
+  return repository.streamDevice(params.roomId, params.outletId, params.deviceId);
+});
+
+final mainRoomDevicesProvider = FutureProvider<List<DeviceModel>>((ref) async {
+  final mainRoom = await ref.watch(mainRoomProvider.future);
+  final repository = ref.read(deviceRepositoryProvider);
+  if (mainRoom.id != null && mainRoom.defaultOutlet?.id != null) {
+    return await repository.getDevices(mainRoom.id!, mainRoom.defaultOutlet!.id);
+  }
+  return [];
+});
+
+final mainRoomDeviceStreamProvider = StreamProvider.family<DeviceModel, String>((ref, deviceId) {
+  final repository = ref.read(deviceRepositoryProvider);
+  return repository.streamMainRoomDevice(deviceId);
+});
+
+final mainRoomDevicesStreamProvider = StreamProvider<List<DeviceModel>>((ref) {
+  final repository = ref.read(deviceRepositoryProvider);
+  return repository.streamMainRoomDevices();
 });

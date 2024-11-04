@@ -4,16 +4,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/firebase_options.dart';
 import 'package:home_automation/routes/app.routes.dart';
 import 'package:home_automation/styles/theams.dart';
+import 'package:firebase_database/firebase_database.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   
-  runApp(
-    const ProviderScope(child: HomeAutomationApp())
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    
+    // Configure Realtime Database
+    FirebaseDatabase database = FirebaseDatabase.instance;
+    database.setLoggingEnabled(true);
+    database.databaseURL = "https://home-automation-78d43-default-rtdb.asia-southeast1.firebasedatabase.app";
+    
+    print("Firebase initialized successfully");
+  } catch (e) {
+    print("Error initializing Firebase: $e");
+  }
+  
+  runApp(const ProviderScope(child: HomeAutomationApp()));
 }
 
 class HomeAutomationApp extends StatelessWidget {
@@ -35,4 +47,6 @@ class HomeAutomationApp extends StatelessWidget {
 }
 
 // C:\Users\Augustine\Desktop\S9 Project\home_automation\lib\main.dart
+
+
 

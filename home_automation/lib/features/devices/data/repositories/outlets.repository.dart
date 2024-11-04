@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 import 'package:home_automation/features/shared/services/firestore.service.dart';
 

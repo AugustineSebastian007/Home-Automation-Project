@@ -25,4 +25,13 @@ class OutletRepository {
   Future<void> removeAllOutlets(String roomId) async {
     await _firestoreService.removeAllOutlets(roomId);
   }
+
+  Future<OutletModel> getMainOutlet() async {
+    return OutletModel(
+      id: 'esp32',
+      label: 'ESP32',
+      ip: '192.168.1.100',
+      roomId: 'main_room',
+    );
+  }
 }

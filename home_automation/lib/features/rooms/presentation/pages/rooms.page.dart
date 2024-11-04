@@ -6,7 +6,6 @@ import 'package:home_automation/features/rooms/presentation/widgets/rooms_list.d
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
-import 'package:home_automation/features/auth/presentation/providers/auth_providers.dart';
 
 
 class RoomsPage extends ConsumerWidget {

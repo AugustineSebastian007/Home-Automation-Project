@@ -4,15 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/navigation/presentation/widgets/main_appbar.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
-import 'package:home_automation/features/devices/presentation/widgets/devices_list.dart';
 import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart';
-import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
 import 'package:home_automation/helpers/enums.dart';
-import 'package:home_automation/styles/styles.dart';
-import 'package:home_automation/features/devices/data/models/device.model.dart';
-import 'package:home_automation/features/devices/presentation/widgets/device_row_item.dart';
-import 'package:home_automation/features/devices/presentation/widgets/device_details_panel.dart';
-import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
 import 'package:home_automation/features/outlets/presentation/providers/outlet_providers.dart';
 
 class RoomDetailsPage extends ConsumerWidget {
@@ -72,6 +65,12 @@ class RoomDetailsPage extends ConsumerWidget {
                 loading: () => Center(child: CircularProgressIndicator()),
                 error: (error, stack) => Center(child: Text('Error loading outlets: $error')),
               ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.push('/dummy-main-hall');
+              },
+              child: Text('Dummy Main Hall'),
             ),
           ],
         ),

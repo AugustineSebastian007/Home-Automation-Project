@@ -11,6 +11,9 @@ _$RoomModelImpl _$$RoomModelImplFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       name: json['name'] as String,
       deviceCount: (json['deviceCount'] as num?)?.toInt() ?? 0,
+      defaultOutlet: json['defaultOutlet'] == null
+          ? null
+          : OutletModel.fromJson(json['defaultOutlet'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$RoomModelImplToJson(_$RoomModelImpl instance) =>
@@ -18,4 +21,5 @@ Map<String, dynamic> _$$RoomModelImplToJson(_$RoomModelImpl instance) =>
       'id': instance.id,
       'name': instance.name,
       'deviceCount': instance.deviceCount,
+      'defaultOutlet': instance.defaultOutlet,
     };

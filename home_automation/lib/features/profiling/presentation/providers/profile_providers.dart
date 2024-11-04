@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/profiling/data/models/profile.model.dart';
 import 'package:home_automation/features/profiling/data/repositories/profile_repository.dart';
-import 'package:home_automation/features/shared/services/firestore.service.dart';
 import 'package:home_automation/features/shared/providers/shared_providers.dart' show firestoreServiceProvider;
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/providers/device_providers.dart' hide firestoreServiceProvider;
