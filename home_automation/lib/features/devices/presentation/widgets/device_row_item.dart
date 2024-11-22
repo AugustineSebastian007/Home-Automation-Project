@@ -6,17 +6,18 @@ import 'package:home_automation/styles/styles.dart';
 class DeviceRowItem extends StatelessWidget {
 
   final DeviceModel device;
-  final Function onTapDevice;
+  final Function(DeviceModel) onTapDevice;
+  final Function(bool) onToggle;
 
   const DeviceRowItem({
     required this.device,
     required this.onTapDevice,
+    required this.onToggle,
     super.key
   });
 
   @override
   Widget build(BuildContext context) {
-
     final selectedColor = device.isSelected ? Theme.of(context).colorScheme.primary :
       Theme.of(context).colorScheme.secondary;
 
@@ -30,9 +31,7 @@ class DeviceRowItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
         color: bgColor,
         child: InkWell(
-          onTap: () {
-            onTapDevice(device);
-          },
+          onTap: () => onTapDevice(device),
           splashColor: splashColor,
           highlightColor: splashColor,
           child: Padding(
@@ -50,7 +49,12 @@ class DeviceRowItem extends StatelessWidget {
                       color: selectedColor
                     )
                   ),
-                )
+                ),
+                Switch(
+                  value: device.isSelected,
+                  onChanged: onToggle,
+                  activeColor: selectedColor,
+                ),
               ],
             ),
           ),

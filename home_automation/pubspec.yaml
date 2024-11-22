@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.3.4 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -43,12 +43,18 @@ dependencies:
   cloud_firestore: ^5.0.2
   firebase_auth: ^5.1.2
   firebase_storage: ^12.1.0
-  dcdg: ^4.0.1
   responsive_builder: ^0.7.1
   shared_preferences: ^2.2.3
   intl: ^0.19.0
   icons_launcher: ^2.1.7
   google_sign_in: ^6.2.1
+  freezed_annotation: ^2.4.4
+  equatable: ^2.0.5
+  rxdart: ^0.28.0
+  firebase_database: ^11.1.4
+  uuid: ^4.5.1
+  mockito: ^5.4.4
+  test: ^1.25.2
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +66,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  build_runner: ^2.2.0
+  analyzer: ^6.4.1
+  json_serializable: ^6.8.0
+  freezed: ^2.5.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -102,3 +112,29 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+icons_launcher:
+  image_path: "assets/icon/icon.png"
+  platforms:
+    android:
+      enable: true
+      image_path: "assets/icon/icon.png"
+      adaptive_background_color: '#FFFFFF'
+      adaptive_foreground_image: "assets/icon/icon_foreground.png"
+      adaptive_round_image: "assets/icon/icon_round.png"
+    ios:
+      enable: true
+      image_path: "assets/icon/icon.png"
+    web:
+      enable: true
+      image_path: "assets/icon/icon.png"
+      favicon_path: "assets/icon/favicon.png"
+    macos:
+      enable: true
+      image_path: "assets/icon/icon.png"
+    windows:
+      enable: true
+      image_path: "assets/icon/icon.png"
+    linux:
+      enable: true
+      image_path: "assets/icon/icon.png"

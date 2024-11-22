@@ -17,11 +17,11 @@ class HomeTileOptionsRepository {
         label: 'Manage Devices', 
         option: HomeTileOptions.manageDevices,
       ),
-      HomeTileOption(
-        icon: Icons.sensors,
-        label: 'Test Connectivity', 
-        option: HomeTileOptions.manageDevices,
-      ),
+      // HomeTileOption(
+      //   icon: Icons.sensors,
+      //   label: 'Test Connectivity', 
+      //   option: HomeTileOptions.testConnection,
+      // ),
     ];
   }
 }
