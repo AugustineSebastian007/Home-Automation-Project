@@ -164,8 +164,9 @@ class ProfileDetailsPage extends ConsumerWidget {
             ),
           ),
         );
-        // Refresh the profile to ensure UI is in sync
-        ref.refresh(profileWithDevicesProvider(profileId));
+        // Store the refresh result in a variable
+        final refreshFuture = ref.refresh(profileWithDevicesProvider(profileId));
+        await refreshFuture.value; // Wait for the refresh to complete
       }
     }
   }

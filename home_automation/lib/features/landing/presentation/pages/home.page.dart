@@ -15,25 +15,18 @@ class HomePage extends StatelessWidget {
 
     final config = LandingPageResponsiveConfig.landingPageConfig(context);
 
-    return Flex(
-      direction: Axis.vertical,
+    return Column(
       children: [
         Expanded(
-          flex: config.homeTopPartFlex,
-          child: Flex(
-            direction: config.homeTopDirection,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: config.homeHeaderFlex,
-                child: const HomePageHeader()
-              ),
-              HomeAutomationStyles.smallVGap,
-              const Expanded(
-                child: HomeTileOptionsPanel()
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const HomePageHeader(),
+                HomeAutomationStyles.smallVGap,
+                const HomeTileOptionsPanel(),
+              ],
+            ),
           ),
         ),
         const EnergyConsumptionPanel()

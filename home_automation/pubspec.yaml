@@ -55,6 +55,7 @@ dependencies:
   uuid: ^4.5.1
   mockito: ^5.4.4
   test: ^1.25.2
+  video_player: ^2.8.2
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +87,7 @@ flutter:
   assets:
     - assets/anims/
     - lib/images/
+    - assets/test_videos/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

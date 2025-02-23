@@ -22,6 +22,7 @@ import 'package:home_automation/features/profiling/presentation/pages/add_profil
 import 'package:home_automation/features/profiling/presentation/pages/profile_details.page.dart';
 
 import '../features/rooms/presentation/pages/dummy_main_hall.page.dart';
+import '../features/camera/presentation/pages/camera_footage.page.dart';
 
 class AppRoutes {
   static final router = GoRouter(
@@ -58,6 +59,10 @@ class AppRoutes {
           GoRoute(
             path: ProfilingPage.route,
             pageBuilder: (context, state) => const NoTransitionPage(child: ProfilingPage()),
+          ),
+          GoRoute(
+            path: CameraFootagePage.route,
+            pageBuilder: (context, state) => const NoTransitionPage(child: CameraFootagePage()),
           ),
         ],
       ),

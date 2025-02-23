@@ -229,10 +229,10 @@ void loop() {
     Serial.println(WiFi.localIP());
   }
 
+  // Keep reading DHT sensor periodically for local use
   if (now - previousMillis >= interval) {
     previousMillis = now;
     DHT_SENSOR_READ();
-    sendDataToFirebase();
   }
 
   ir_remote();
@@ -266,19 +266,29 @@ void loop() {
 // Consolidated button handler
 void buttonHandler(int relayPin, int relayNumber, bool &relayState, uint8_t eventType) {
   if (DEBUG_SW) Serial.println("EVENT" + String(relayNumber));
+  bool newState;
+  
   switch (eventType) {
     case AceButton::kEventPressed:
       if (DEBUG_SW) Serial.println("kEventPressed");
-      relayState = true;
+      newState = true;
       digitalWrite(relayPin, HIGH);
       break;
     case AceButton::kEventReleased:
       if (DEBUG_SW) Serial.println("kEventReleased");
-      relayState = false;
+      newState = false;
       digitalWrite(relayPin, LOW);
       break;
+    default:
+      return;
   }
-  Firebase.setBool(fbdo, "/outlets/living_room/devices/relay" + String(relayNumber), relayState);
+  
+  // Only send to Firebase if state actually changed
+  if (relayState != newState) {
+    relayState = newState;
+    Firebase.setBool(fbdo, "/outlets/living_room/devices/relay" + String(relayNumber), relayState);
+    Serial.printf("Relay %d state changed. Sending to Firebase: %d\n", relayNumber, relayState);
+  }
 }
 
 void button1Handler(AceButton* button, uint8_t eventType, uint8_t buttonState) {
@@ -299,33 +309,34 @@ void button4Handler(AceButton* button, uint8_t eventType, uint8_t buttonState) {
 
 void button5Handler(AceButton* button, uint8_t eventType, uint8_t buttonState) {
   if (DEBUG_SW) Serial.println("EVENT5");
+  
+  int previousSpeed = curr_speed;
+  bool previousPower = fan_power;
+  
   switch (eventType) {
     case AceButton::kEventPressed:
       if (DEBUG_SW) Serial.println("kEventPressed");
-      if (curr_speed == 0) {
-        speed0();
-      }
-      if (curr_speed == 1) {
-        speed1();
-      }
-      if (curr_speed == 2) {
-        speed2();
-      }
-      if (curr_speed == 3) {
-        speed3();
-      }
-      if (curr_speed == 4) {
-        speed4();
-      }
+      if (curr_speed == 0) speed0();
+      else if (curr_speed == 1) speed1();
+      else if (curr_speed == 2) speed2();
+      else if (curr_speed == 3) speed3();
+      else if (curr_speed == 4) speed4();
       break;
+      
     case AceButton::kEventReleased:
       if (DEBUG_SW) Serial.println("kEventReleased");
       digitalWrite(Speed1, LOW);
       digitalWrite(Speed2, LOW);
       digitalWrite(Speed4, LOW);
       fan_power = 0;
-      Firebase.setInt(fbdo, "/outlets/living_room/devices/fan/speed", curr_speed);
-      Firebase.setBool(fbdo, "/outlets/living_room/devices/fan/power", fan_power);
+      
+      // Only send updates if values changed
+      if (previousSpeed != curr_speed) {
+        Firebase.setInt(fbdo, "/outlets/living_room/devices/fan/speed", curr_speed);
+      }
+      if (previousPower != fan_power) {
+        Firebase.setBool(fbdo, "/outlets/living_room/devices/fan/power", fan_power);
+      }
       delay(100);
       break;
   }

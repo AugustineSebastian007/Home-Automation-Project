@@ -20,7 +20,7 @@ void main() {
     print('✅ Test completed\n');
   });
 
-  group('MyTextField Tests', () {
+  group('UI Component Tests', () {
     // Test case for verifying MyTextField widget rendering and functionality
     testWidgets('MyTextField renders with correct properties', (WidgetTester tester) async {
       print('📱 Testing MyTextField widget...');
@@ -59,9 +59,111 @@ void main() {
           reason: 'TextField should update controller value correctly');
       print('✅ Text input functionality verified');
     });
+
+    testWidgets('MyTextField obscureText functionality works correctly', (WidgetTester tester) async {
+      print('📱 Testing MyTextField password visibility...');
+      
+      final controller = TextEditingController();
+      
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MyTextField(
+              controller: controller,
+              hintText: 'Password',
+              obscureText: true,
+            ),
+          ),
+        ),
+      );
+
+      final textField = find.byType(TextField);
+      expect((tester.widget(textField) as TextField).obscureText, true,
+          reason: 'TextField should obscure text when obscureText is true');
+      print('✅ Password visibility verified');
+    });
+
+    testWidgets('MyTextField style and decoration properties', (WidgetTester tester) async {
+      print('📱 Testing MyTextField styling...');
+      
+      final controller = TextEditingController();
+      
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MyTextField(
+              controller: controller,
+              hintText: 'Test Hint',
+              obscureText: false,
+            ),
+          ),
+        ),
+      );
+
+      final textField = find.byType(TextField);
+      final TextField textFieldWidget = tester.widget(textField);
+      
+      expect(textFieldWidget.decoration, isNotNull,
+          reason: 'TextField should have decoration');
+      expect(textFieldWidget.decoration?.hintText, 'Test Hint',
+          reason: 'TextField should have correct hint text');
+      expect(textFieldWidget.decoration?.fillColor, Colors.grey[200],
+          reason: 'TextField should have correct fill color');
+      expect(textFieldWidget.decoration?.filled, true,
+          reason: 'TextField should have filled background');
+      print('✅ TextField styling verified');
+    });
   });
 
-  group('Color Tests', () {
+  group('Input Handling Tests', () {
+    testWidgets('MyTextField handles empty input correctly', (WidgetTester tester) async {
+      print('📱 Testing MyTextField empty input handling...');
+      
+      final controller = TextEditingController();
+      
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MyTextField(
+              controller: controller,
+              hintText: 'Test Input',
+              obscureText: false,
+            ),
+          ),
+        ),
+      );
+
+      expect(controller.text, '',
+          reason: 'TextField should start with empty text');
+      
+      await tester.enterText(find.byType(TextField), '');
+      expect(controller.text, '',
+          reason: 'TextField should handle empty input');
+      print('✅ Empty input handling verified');
+    });
+
+    test('Password validation test', () {
+      print('🔐 Testing password validation...');
+      
+      final password = 'Test123!';
+      final confirmPassword = 'Test123!';
+      print('📝 Test passwords created');
+      
+      print('🔍 Checking password match...');
+      expect(password == confirmPassword, true,
+          reason: 'Passwords should match');
+      print('✅ Password match verified');
+      
+      print('🔍 Checking password length...');
+      expect(password.length >= 6, true,
+          reason: 'Password should be at least 6 characters long');
+      print('✅ Password length verified');
+      
+      print('✨ All password validations passed');
+    });
+  });
+
+  group('Theme and Styling Tests', () {
     // Test case for verifying color constants
     test('HomeAutomationColors should have correct values', () {
       print('🎨 Testing color constants...');
@@ -83,26 +185,57 @@ void main() {
     });
   });
 
-  group('Form Validation Tests', () {
-    // Test case for password validation
-    test('Password validation test', () {
-      print('🔐 Testing password validation...');
+  group('Error Handling and Edge Cases', () {
+    testWidgets('MyTextField handles special characters correctly', (WidgetTester tester) async {
+      print('📱 Testing special character handling...');
       
-      final password = 'Test123!';
-      final confirmPassword = 'Test123!';
-      print('📝 Test passwords created');
+      final controller = TextEditingController();
       
-      print('🔍 Checking password match...');
-      expect(password == confirmPassword, true,
-          reason: 'Passwords should match');
-      print('✅ Password match verified');
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MyTextField(
+              controller: controller,
+              hintText: 'Enter special characters',
+              obscureText: false,
+            ),
+          ),
+        ),
+      );
+
+      // Test various special characters
+      final specialChars = r'!@#$%^&*()_+-=[]{}|;:,.<>?';
+      await tester.enterText(find.byType(TextField), specialChars);
       
-      print('🔍 Checking password length...');
-      expect(password.length >= 6, true,
-          reason: 'Password should be at least 6 characters long');
-      print('✅ Password length verified');
+      expect(controller.text, specialChars,
+          reason: 'TextField should handle special characters without modification');
+      print('✅ Special characters handling verified');
+    });
+
+    testWidgets('MyTextField handles long text input', (WidgetTester tester) async {
+      print('📱 Testing long text input...');
       
-      print('✨ All password validations passed');
+      final controller = TextEditingController();
+      
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MyTextField(
+              controller: controller,
+              hintText: 'Enter long text',
+              obscureText: false,
+            ),
+          ),
+        ),
+      );
+
+      // Create a very long string
+      final longText = 'A' * 1000;
+      await tester.enterText(find.byType(TextField), longText);
+      
+      expect(controller.text.length, 1000,
+          reason: 'TextField should handle long text input');
+      print('✅ Long text handling verified');
     });
   });
 }

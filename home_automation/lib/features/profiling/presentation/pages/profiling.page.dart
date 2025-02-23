@@ -25,7 +25,7 @@ class ProfilingPage extends ConsumerWidget {
           children: [
             const MainPageHeader(
               icon: FlickyAnimatedIcons(
-                icon: FlickyAnimatedIconOptions.bardevices,
+                icon: FlickyAnimatedIconOptions.lightbulb,
                 size: FlickyAnimatedIconSizes.large,
                 isSelected: true,
               ),

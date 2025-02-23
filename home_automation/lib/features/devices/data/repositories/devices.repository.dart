@@ -53,10 +53,10 @@ class DevicesRepository {
     const String mainRoomId = 'main_room';
     const String mainOutletId = 'esp32';
 
-    // Check if the main room exists
-    final mainRoom = await _firestoreService.getRoom(mainRoomId);
-    if (mainRoom == null) {
-      // Create the main room
+    try {
+      await _firestoreService.getRoom(mainRoomId);
+    } catch (e) {
+      // Room doesn't exist, create it
       final newRoom = RoomModel(
         id: mainRoomId,
         name: 'Main Room',
