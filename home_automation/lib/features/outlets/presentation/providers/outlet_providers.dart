@@ -1,9 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 import 'package:home_automation/features/outlets/data/repositories/outlet_repository.dart';
-import 'package:home_automation/features/shared/services/firestore.service.dart';
-
-final firestoreServiceProvider = Provider((ref) => FirestoreService());
+import 'package:home_automation/features/shared/providers/shared_providers.dart';
 
 final outletRepositoryProvider = Provider((ref) => OutletRepository(ref.read(firestoreServiceProvider)));
 

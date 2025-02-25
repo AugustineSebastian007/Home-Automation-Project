@@ -5,8 +5,7 @@ import 'package:home_automation/features/shared/services/firestore.service.dart'
 import 'package:home_automation/features/auth/presentation/providers/auth_providers.dart' show authStateProvider;
 import 'package:home_automation/features/outlets/presentation/providers/outlet_providers.dart';
 import 'package:home_automation/features/devices/presentation/providers/device_providers.dart' show deviceRepositoryProvider;
-
-final firestoreServiceProvider = Provider((ref) => FirestoreService());
+import 'package:home_automation/features/shared/providers/shared_providers.dart';
 
 final roomRepositoryProvider = Provider((ref) {
   final firestoreService = ref.read(firestoreServiceProvider);

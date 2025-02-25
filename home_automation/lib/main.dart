@@ -6,9 +6,26 @@ import 'package:home_automation/routes/app.routes.dart';
 import 'package:home_automation/styles/theams.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:home_automation/features/settings/presentation/pages/settings.page.dart';
+import 'package:home_automation/services/background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize notifications
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  // Request notification permissions
+  await Permission.notification.request();
+
+  await BackgroundService.initializeService();
   
   try {
     await Firebase.initializeApp(

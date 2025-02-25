@@ -355,4 +355,67 @@ class FirestoreService {
         .doc(profileId)
         .delete();
   }
+
+  Future<void> saveCameraBoundaryPoints(String feedPath, List<List<double>> points) async {
+    try {
+      // Ensure user is authenticated
+      if (_auth.currentUser == null) {
+        print('No authenticated user');
+        return;
+      }
+
+      // Split the feed path and create a proper nested collection path
+      final pathSegments = feedPath.split('/');
+      
+      // Construct a reference that ensures an even number of segments
+      DocumentReference docRef = _firestore.collection('users').doc(userId);
+      for (int i = 0; i < pathSegments.length; i++) {
+        docRef = docRef.collection(pathSegments[i]).doc(pathSegments[++i] ?? 'default');
+      }
+
+      await docRef.collection('boundaries').doc('main').set({
+        'points': points.map((point) => {
+          'x': point[0],
+          'y': point[1],
+        }).toList(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      print('Boundary points saved successfully for $feedPath');
+    } catch (e) {
+      print('Error saving boundary points: $e');
+      throw Exception('Failed to save boundary points: $e');
+    }
+  }
+
+  Stream<List<List<double>>> streamCameraBoundaryPoints(String feedPath) {
+    try {
+      // Split the feed path and create a proper nested collection path
+      final pathSegments = feedPath.split('/');
+      
+      // Construct a reference that ensures an even number of segments
+      DocumentReference docRef = _firestore.collection('users').doc(userId);
+      for (int i = 0; i < pathSegments.length; i++) {
+        docRef = docRef.collection(pathSegments[i]).doc(pathSegments[++i] ?? 'default');
+      }
+
+      return docRef.collection('boundaries').doc('main').snapshots().map((snapshot) {
+        if (!snapshot.exists || !snapshot.data()!.containsKey('points')) {
+          return [];
+        }
+        
+        final List<dynamic> points = snapshot.data()!['points'] as List<dynamic>;
+        return points.map<List<double>>((point) {
+          final Map<String, dynamic> pointData = point as Map<String, dynamic>;
+          return [
+            (pointData['x'] as num).toDouble(),
+            (pointData['y'] as num).toDouble(),
+          ];
+        }).toList();
+      });
+    } catch (e) {
+      print('Error streaming boundary points: $e');
+      return Stream.value([]);
+    }
+  }
 }

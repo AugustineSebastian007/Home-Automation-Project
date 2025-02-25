@@ -6,7 +6,7 @@ import 'package:home_automation/features/outlets/data/repositories/outlet_reposi
 import 'package:home_automation/features/devices/presentation/viewmodels/devicelist.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_type.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_save.viewmodel.dart';
-import 'package:home_automation/features/shared/services/firestore.service.dart';
+import 'package:home_automation/features/shared/providers/shared_providers.dart';
 import 'package:home_automation/helpers/enums.dart'; // Adjust the path as needed
 import 'package:flutter/material.dart';
 import 'package:home_automation/features/rooms/data/models/room.model.dart';
@@ -15,8 +15,6 @@ import 'package:home_automation/features/rooms/data/models/room.model.dart';
 final deviceNameFieldProvider = Provider((ref) => TextEditingController());
 
 final deviceNameValueProvider = StateProvider<String>((ref) => '');
-
-final firestoreServiceProvider = Provider((ref) => FirestoreService());
 
 final deviceRepositoryProvider = Provider((ref) {
   final firestoreService = ref.read(firestoreServiceProvider);

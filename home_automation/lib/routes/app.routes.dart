@@ -23,6 +23,7 @@ import 'package:home_automation/features/profiling/presentation/pages/profile_de
 
 import '../features/rooms/presentation/pages/dummy_main_hall.page.dart';
 import '../features/camera/presentation/pages/camera_footage.page.dart';
+import '../features/camera/presentation/pages/single_camera.page.dart';
 
 class AppRoutes {
   static final router = GoRouter(
@@ -63,6 +64,18 @@ class AppRoutes {
           GoRoute(
             path: CameraFootagePage.route,
             pageBuilder: (context, state) => const NoTransitionPage(child: CameraFootagePage()),
+          ),
+          GoRoute(
+            path: '/single-camera',
+            pageBuilder: (context, state) {
+              final args = state.extra as Map<String, dynamic>;
+              return NoTransitionPage(
+                child: SingleCameraPage(
+                  label: args['label'] as String,
+                  feedPath: args['feedPath'] as String,
+                ),
+              );
+            },
           ),
         ],
       ),

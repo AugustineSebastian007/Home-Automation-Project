@@ -7,6 +7,9 @@ import 'package:home_automation/styles/styles.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
+import 'package:home_automation/features/camera/presentation/pages/single_camera.page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:home_automation/services/background_service.dart';
 
 class CameraFootagePage extends ConsumerStatefulWidget {
   static const String route = '/camera-footage';
@@ -176,7 +179,7 @@ class _CameraFootagePageState extends ConsumerState<CameraFootagePage> {
 
   Widget _buildCameraFeedContainer(String label, String feedPath) {
     return Container(
-      height: 250, // Increased height from 200 to 250
+      height: 250,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
         borderRadius: BorderRadius.circular(HomeAutomationStyles.mediumRadius),
@@ -185,12 +188,32 @@ class _CameraFootagePageState extends ConsumerState<CameraFootagePage> {
         children: [
           Padding(
             padding: HomeAutomationStyles.smallPadding,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                color: Theme.of(context).colorScheme.secondary,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.settings,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  onPressed: () {
+                    GoRouter.of(context).push(
+                      '/single-camera',
+                      extra: {
+                        'label': label,
+                        'feedPath': feedPath,
+                      },
+                    );
+                  },
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -239,9 +262,12 @@ class _CameraFootagePageState extends ConsumerState<CameraFootagePage> {
     );
   }
 
-  void _updateAlertMode(bool value) {
+  void _updateAlertMode(bool value) async {
     if (_isInitialized && database != null) {
-      database!.ref('camera/alert_mode').set(value);
+      await database!.ref('camera/alert_mode').set(value);
+      if (value) {
+        await BackgroundService.showAlertNotification();
+      }
     }
   }
 
