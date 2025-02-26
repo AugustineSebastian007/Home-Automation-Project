@@ -24,6 +24,7 @@ import 'package:home_automation/features/profiling/presentation/pages/profile_de
 import '../features/rooms/presentation/pages/dummy_main_hall.page.dart';
 import '../features/camera/presentation/pages/camera_footage.page.dart';
 import '../features/camera/presentation/pages/single_camera.page.dart';
+import '../features/household/presentation/pages/household_members.page.dart';
 
 class AppRoutes {
   static final router = GoRouter(
@@ -153,6 +154,10 @@ class AppRoutes {
       GoRoute(
         path: '/dummy-main-hall',
         builder: (context, state) => DummyMainHallPage(),
+      ),
+      GoRoute(
+        path: HouseholdMembersPage.route,
+        builder: (context, state) => const HouseholdMembersPage(),
       ),
     ],
   );

@@ -5,6 +5,7 @@ import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:home_automation/features/household/presentation/widgets/household_members_section.dart';
 
 final themeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
 
@@ -109,6 +110,8 @@ class SettingsPage extends ConsumerWidget {
                     _buildSettingsTile(context, 'Email', userEmail, Icons.email),
                   ],
                 ),
+                HomeAutomationStyles.mediumVGap,
+                HouseholdMembersSection(),
                 HomeAutomationStyles.mediumVGap,
                 _buildSettingsSection(
                   context,

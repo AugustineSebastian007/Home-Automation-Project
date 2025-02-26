@@ -22,7 +22,8 @@ void main() async {
       InitializationSettings(android: initializationSettingsAndroid);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-  // Request notification permissions
+  // Request permissions
+  await Permission.camera.request();
   await Permission.notification.request();
 
   await BackgroundService.initializeService();

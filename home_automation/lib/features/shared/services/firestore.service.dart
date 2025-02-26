@@ -4,12 +4,17 @@ import 'package:home_automation/features/profiling/data/models/profile.model.dar
 import 'package:home_automation/features/rooms/data/models/room.model.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
+import 'package:home_automation/features/household/data/models/household_member.model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  String get userId => _auth.currentUser!.uid;
+  String get userId {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+    return user.uid;
+  }
 
   // Rooms
   Future<List<RoomModel>> getRooms() async {
@@ -417,5 +422,43 @@ class FirestoreService {
       print('Error streaming boundary points: $e');
       return Stream.value([]);
     }
+  }
+
+  Stream<List<HouseholdMemberModel>> streamHouseholdMembers() {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('household_members')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => HouseholdMemberModel.fromJson(doc.data()))
+            .toList());
+  }
+
+  Future<void> addHouseholdMember(HouseholdMemberModel member) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('household_members')
+        .doc(member.id)
+        .set(member.toJson());
+  }
+
+  Future<void> updateHouseholdMember(String memberId, Map<String, dynamic> data) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('household_members')
+        .doc(memberId)
+        .update(data);
+  }
+
+  Future<void> deleteHouseholdMember(String memberId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('household_members')
+        .doc(memberId)
+        .delete();
   }
 }
