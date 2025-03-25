@@ -9,23 +9,60 @@ import 'package:home_automation/features/devices/presentation/providers/device_p
 import 'package:home_automation/features/devices/presentation/widgets/device_row_item.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 
-class ProfileDetailsPage extends ConsumerWidget {
-  static const String route = '/profile-details/:id';
+class ProfileDetailsPage extends ConsumerStatefulWidget {
+  static const String route = '/profile-details/:id/:memberId';
   final String profileId;
+  final String memberId;
 
-  const ProfileDetailsPage({Key? key, required this.profileId}) : super(key: key);
+  const ProfileDetailsPage({
+    Key? key, 
+    required this.profileId,
+    required this.memberId,
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileWithDevicesAsyncValue = ref.watch(profileWithDevicesProvider(profileId));
+  ConsumerState<ProfileDetailsPage> createState() => _ProfileDetailsPageState();
+}
+
+class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Schedule the invalidation for the next frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.invalidate(profileWithDevicesProvider);
+        ref.read(selectedProfileIdProvider.notifier).state = widget.profileId;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(profileWithDevicesProvider((widget.memberId, widget.profileId)));
+      ref.read(selectedProfileIdProvider.notifier).state = null;
+    });
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileWithDevicesAsyncValue = ref.watch(
+      profileWithDevicesProvider((widget.memberId, widget.profileId))
+    );
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(profileWithDevicesAsyncValue.value?.$1.name ?? 'Profile Details'),
+        title: profileWithDevicesAsyncValue.when(
+          data: (data) => Text(data.$1.name),
+          loading: () => const Text('Loading...'),
+          error: (_, __) => const Text('Profile Details'),
+        ),
       ),
       body: SafeArea(
         child: profileWithDevicesAsyncValue.when(
@@ -51,7 +88,7 @@ class ProfileDetailsPage extends ConsumerWidget {
                       Switch(
                         value: profile.isActive,
                         onChanged: (value) {
-                          _toggleAllDevices(context, ref, profileId, value);
+                          _toggleAllDevices(context, ref, widget.profileId, value);
                         },
                       ),
                     ],
@@ -77,7 +114,7 @@ class ProfileDetailsPage extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddDeviceDialog(context, ref, profileId),
+        onPressed: () => _showAddDeviceDialog(context, ref, widget.profileId, widget.memberId),
         child: Icon(Icons.add),
       ),
     );
@@ -137,7 +174,8 @@ class ProfileDetailsPage extends ConsumerWidget {
     scaffoldMessenger.showSnackBar(loadingSnackBar);
     
     try {
-      await ref.read(profileRepositoryProvider).toggleAllDevicesInProfile(profileId, value, ref);
+      await ref.read(profileRepositoryProvider)
+          .toggleAllDevicesInProfile(widget.memberId, profileId, value, ref);
       
       if (context.mounted) {
         scaffoldMessenger.clearSnackBars();
@@ -165,17 +203,17 @@ class ProfileDetailsPage extends ConsumerWidget {
           ),
         );
         // Store the refresh result in a variable
-        final refreshFuture = ref.refresh(profileWithDevicesProvider(profileId));
+        final refreshFuture = ref.refresh(profileWithDevicesProvider((widget.memberId, profileId)));
         await refreshFuture.value; // Wait for the refresh to complete
       }
     }
   }
 
-  void _showAddDeviceDialog(BuildContext context, WidgetRef ref, String profileId) {
+  void _showAddDeviceDialog(BuildContext context, WidgetRef ref, String profileId, String memberId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AddDeviceToProfileDialog(profileId: profileId);
+        return AddDeviceToProfileDialog(profileId: profileId, memberId: memberId);
       },
     );
   }
@@ -183,8 +221,13 @@ class ProfileDetailsPage extends ConsumerWidget {
 
 class AddDeviceToProfileDialog extends ConsumerWidget {
   final String profileId;
+  final String memberId;
 
-  const AddDeviceToProfileDialog({Key? key, required this.profileId}) : super(key: key);
+  const AddDeviceToProfileDialog({
+    Key? key, 
+    required this.profileId,
+    required this.memberId,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -208,9 +251,19 @@ class AddDeviceToProfileDialog extends ConsumerWidget {
                 return ListTile(
                   title: Text(device.label),
                   subtitle: Text('Room: ${device.roomId}, Outlet: ${device.outletId}'),
-                  onTap: () {
-                    ref.read(profileRepositoryProvider).addDeviceToProfile(profileId, device.id);
-                    Navigator.of(context).pop();
+                  onTap: () async {
+                    try {
+                      final profileData = await ref.read(
+                        profileProvider((memberId, profileId)).future
+                      );
+                      await ref.read(profileRepositoryProvider)
+                          .addDeviceToProfile(memberId, profileId, device.id);
+                      Navigator.of(context).pop();
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error adding device: $e')),
+                      );
+                    }
                   },
                 );
               },

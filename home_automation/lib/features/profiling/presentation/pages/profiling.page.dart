@@ -33,7 +33,7 @@ class ProfilingPage extends ConsumerWidget {
             ),
             Expanded(
               child: profilesAsyncValue.when(
-                data: (profiles) => _buildProfileList(context, profiles),
+                data: (profiles) => _buildProfileList(context, ref, profiles),
                 loading: () => Center(child: CircularProgressIndicator()),
                 error: (error, stack) => Center(child: Text('Error: $error')),
               ),
@@ -48,13 +48,13 @@ class ProfilingPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileList(BuildContext context, List<ProfileModel> profiles) {
+  Widget _buildProfileList(BuildContext context, WidgetRef ref, List<ProfileModel> profiles) {
     return ListView.builder(
       itemCount: profiles.length,
       padding: HomeAutomationStyles.mediumPadding,
       itemBuilder: (context, index) {
         final profile = profiles[index];
-        return _buildProfileTile(context, profile, index)
+        return _buildProfileTile(context, ref, profile, index)
           .animate(
             delay: (index * 0.125).seconds,
           ).slideY(
@@ -69,7 +69,7 @@ class ProfilingPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileTile(BuildContext context, ProfileModel profile, int index) {
+  Widget _buildProfileTile(BuildContext context, WidgetRef ref, ProfileModel profile, int index) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -80,7 +80,7 @@ class ProfilingPage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
         color: colorScheme.secondary.withOpacity(0.15),
         child: InkWell(
-          onTap: () => context.push('/profile-details/${profile.id}'),
+          onTap: () => context.push('/profile-details/${profile.id}/${profile.memberId}'),
           splashColor: colorScheme.secondary.withOpacity(0.25),
           highlightColor: colorScheme.secondary.withOpacity(0.25),
           child: Padding(
@@ -114,8 +114,20 @@ class ProfilingPage extends ConsumerWidget {
                 ),
                 Switch(
                   value: profile.isActive,
-                  onChanged: (value) {
-                    // TODO: Implement profile activation
+                  onChanged: (value) async {
+                    try {
+                      await ref.read(profileRepositoryProvider)
+                          .toggleAllDevicesInProfile(profile.memberId, profile.id, value, ref);
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to toggle profile: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   },
                   activeColor: colorScheme.secondary,
                 ),

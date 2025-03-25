@@ -5,6 +5,7 @@ import 'package:home_automation/features/household/presentation/providers/househ
 import 'package:home_automation/styles/styles.dart';
 import 'package:camera/camera.dart';
 import 'package:home_automation/features/household/presentation/widgets/add_member_dialog.dart';
+import 'package:home_automation/features/profiling/presentation/providers/profile_providers.dart';
 
 class HouseholdMembersSection extends ConsumerWidget {
   const HouseholdMembersSection({Key? key}) : super(key: key);
@@ -132,12 +133,31 @@ class HouseholdMembersSection extends ConsumerWidget {
           children: [
             ListTile(
               leading: Icon(Icons.link),
-              title: Text('Link to Profile'),
+              title: Text(member.profileId != null ? 'Change Profile' : 'Link to Profile'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement profile linking
+                _showProfileSelectionDialog(context, ref, member);
               },
             ),
+            if (member.profileId != null)
+              ListTile(
+                leading: Icon(Icons.link_off),
+                title: Text('Unlink from Profile'),
+                onTap: () async {
+                  try {
+                    Navigator.pop(context);
+                    await ref.read(householdMemberRepositoryProvider)
+                        .unlinkMemberFromProfile(member.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Profile unlinked successfully')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error unlinking profile: $e')),
+                    );
+                  }
+                },
+              ),
             ListTile(
               leading: Icon(Icons.delete, color: Colors.red),
               title: Text('Remove Member', style: TextStyle(color: Colors.red)),
@@ -157,6 +177,60 @@ class HouseholdMembersSection extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showProfileSelectionDialog(BuildContext context, WidgetRef ref, HouseholdMemberModel member) async {
+    final profilesAsync = ref.watch(profileListProvider);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Select Profile'),
+        content: profilesAsync.when(
+          data: (profiles) {
+            if (profiles.isEmpty) {
+              return Text('No profiles available. Create a profile first.');
+            }
+            return SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: profiles.length,
+                itemBuilder: (context, index) {
+                  final profile = profiles[index];
+                  return ListTile(
+                    title: Text(profile.name),
+                    selected: member.profileId == profile.id,
+                    onTap: () async {
+                      try {
+                        Navigator.pop(context);
+                        await ref.read(householdMemberRepositoryProvider)
+                            .linkMemberToProfile(member.id, profile.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Profile linked successfully')),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error linking profile: $e')),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Text('Error loading profiles: $error'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+        ],
       ),
     );
   }

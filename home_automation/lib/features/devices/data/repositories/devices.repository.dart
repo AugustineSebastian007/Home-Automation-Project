@@ -49,105 +49,36 @@ class DevicesRepository {
     return _firestoreService.streamAllDevices();
   }
 
-  Future<void> ensureMainRoomExists() async {
-    const String mainRoomId = 'main_room';
-    const String mainOutletId = 'esp32';
-
-    try {
-      await _firestoreService.getRoom(mainRoomId);
-    } catch (e) {
-      // Room doesn't exist, create it
-      final newRoom = RoomModel(
-        id: mainRoomId,
-        name: 'Main Room',
-        deviceCount: 5,
-      );
-      await _firestoreService.addRoom(newRoom);
-
-      // Create the main outlet
-      final newOutlet = OutletModel(
-        id: mainOutletId,
-        label: 'ESP32',
-        ip: '192.168.1.100',
-        roomId: mainRoomId,
-      );
-      await _firestoreService.addOutlet(mainRoomId, newOutlet);
-
-      // Create the devices
-      await getMainRoomDevices();
-    }
-  }
-
   Future<List<DeviceModel>> getMainRoomDevices() async {
     const String mainRoomId = 'main_room';
     const String mainOutletId = 'esp32';
 
     final existingDevices = await _firestoreService.getDevices(mainRoomId, mainOutletId);
-    if (existingDevices.isNotEmpty) {
-      return existingDevices;
-    }
-
-    final devices = [
-      DeviceModel(
-        id: 'light1',
-        iconOption: FlickyAnimatedIconOptions.lightbulb,
-        label: 'Light 1',
-        isSelected: false,
-        outlet: 1,
-        roomId: mainRoomId,
-        outletId: mainOutletId,
-      ),
-      DeviceModel(
-        id: 'light2',
-        iconOption: FlickyAnimatedIconOptions.lightbulb,
-        label: 'Light 2',
-        isSelected: false,
-        outlet: 2,
-        roomId: mainRoomId,
-        outletId: mainOutletId,
-      ),
-      DeviceModel(
-        id: 'light3',
-        iconOption: FlickyAnimatedIconOptions.lightbulb,
-        label: 'Light 3',
-        isSelected: false,
-        outlet: 3,
-        roomId: mainRoomId,
-        outletId: mainOutletId,
-      ),
-      DeviceModel(
-        id: 'light4',
-        iconOption: FlickyAnimatedIconOptions.lightbulb,
-        label: 'Light 4',
-        isSelected: false,
-        outlet: 4,
-        roomId: mainRoomId,
-        outletId: mainOutletId,
-      ),
-      DeviceModel(
-        id: 'fan',
-        iconOption: FlickyAnimatedIconOptions.fan,
-        label: 'Fan',
-        isSelected: false,
-        outlet: 5,
-        roomId: mainRoomId,
-        outletId: mainOutletId,
-      ),
-    ];
-
-    for (var device in devices) {
-      await _firestoreService.addDevice(mainRoomId, mainOutletId, device);
-    }
-
-    return devices;
+    return existingDevices; // Just return whatever exists, don't create new ones
   }
 
-  Stream<DeviceModel> streamMainRoomDevice(String deviceId) {
-    return _firestoreService.streamDevice('main_room', 'esp32', deviceId);
+  Stream<DeviceModel?> streamMainRoomDevice(String deviceId) {
+    const String mainRoomId = 'main_room';
+    const String mainOutletId = 'esp32';
+    
+    try {
+      return _firestoreService.streamDevice(mainRoomId, mainOutletId, deviceId);
+    } catch (e) {
+      // Return a stream with null if the main room doesn't exist
+      return Stream.value(null);
+    }
   }
 
   Stream<List<DeviceModel>> streamMainRoomDevices() {
-    return _firestoreService.streamDevices('main_room', 'esp32');
+    const String mainRoomId = 'main_room';
+    const String mainOutletId = 'esp32';
+    
+    try {
+      return _firestoreService.streamDevices(mainRoomId, mainOutletId);
+    } catch (e) {
+      // Return an empty list if the main room doesn't exist
+      return Stream.value([]);
+    }
   }
 
   Future<void> ensureMainRoomDevices(String roomId, String outletId) async {

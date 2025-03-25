@@ -12,25 +12,32 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final config = LandingPageResponsiveConfig.landingPageConfig(context);
 
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const HomePageHeader(),
-                HomeAutomationStyles.smallVGap,
-                const HomeTileOptionsPanel(),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          children: [
+            // Top content in scrollable area
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const HomePageHeader(),
+                    HomeAutomationStyles.smallVGap,
+                    const HomeTileOptionsPanel(),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-        const EnergyConsumptionPanel()
-      ],
+            // Energy panel that fills remaining space
+            const Expanded(
+              child: EnergyConsumptionPanel(),
+            ),
+          ],
+        );
+      },
     );
   }
 }

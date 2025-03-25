@@ -1,76 +1,172 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:video_player/video_player.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:home_automation/styles/styles.dart';
 import 'package:home_automation/features/camera/presentation/providers/camera_providers.dart';
 import 'package:home_automation/features/shared/providers/shared_providers.dart';
+import 'package:home_automation/features/camera/presentation/widgets/mjpeg_viewer.dart';
+import 'package:home_automation/features/camera/presentation/widgets/mjpeg_image.dart';
+import 'package:home_automation/features/camera/presentation/widgets/simple_mjpeg_image.dart';
 
 class SingleCameraPage extends ConsumerStatefulWidget {
   static const String route = '/single-camera';
   final String label;
-  final String feedPath;
+  final String url;
 
   const SingleCameraPage({
+    Key? key,
     required this.label,
-    required this.feedPath,
-    super.key,
-  });
+    required this.url,
+  }) : super(key: key);
 
   @override
   ConsumerState<SingleCameraPage> createState() => _SingleCameraPageState();
 }
 
+enum CameraLoadingMethod {
+  webView,
+  directImage,
+  mjpegViewer,
+  mjpegImage,
+  simpleMjpegImage
+}
+
 class _SingleCameraPageState extends ConsumerState<SingleCameraPage> {
-  late VideoPlayerController _controller;
+  late WebViewController _controller;
   bool _isSettingBoundary = false;
+  bool _isLoading = true;
+  
+  // Set the loading method - use simpleMjpegImage for best performance and reliability
+  final CameraLoadingMethod _loadingMethod = CameraLoadingMethod.simpleMjpegImage;
+  
+  // Store the video URL
+  late String _videoUrl;
 
   @override
   void initState() {
     super.initState();
-    _initializeController();
+    
+    // Make sure the URL ends with '/video_feed'
+    _videoUrl = widget.url;
+    if (!_videoUrl.endsWith('/video_feed')) {
+      _videoUrl = _videoUrl + '/video_feed';
+    }
+    
+    if (_loadingMethod == CameraLoadingMethod.webView) {
+      // Use a post-frame callback to initialize the controller
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeController();
+      });
+    } else {
+      // For direct image or mjpeg loading, we don't need to initialize controllers
+      // Just set loading to false after a short delay
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    }
     
     // Load existing boundary points from Firestore
-    ref.read(firestoreServiceProvider)
-      .streamCameraBoundaryPoints(widget.feedPath)
-      .listen((points) {
-        if (points.isNotEmpty) {
-          final boundaryPointsNotifier = ref.read(boundaryPointsProvider(widget.feedPath).notifier);
-          boundaryPointsNotifier.loadPointsFromFirestore(
-            points.map((p) => Offset(p[0], p[1])).toList()
-          );
-        }
-      }).onError((error) {
-        print('Error streaming boundary points: $error');
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(firestoreServiceProvider)
+        .streamCameraBoundaryPoints(widget.url)
+        .listen((points) {
+          if (points.isNotEmpty) {
+            final boundaryPointsNotifier = ref.read(boundaryPointsProvider(widget.url).notifier);
+            boundaryPointsNotifier.loadPointsFromFirestore(
+              points.map((p) => Offset(p[0], p[1])).toList()
+            );
+          }
+        }).onError((error) {
+          print('Error streaming boundary points: $error');
+        });
+    });
   }
 
-  Future<void> _initializeController() async {
+  void _initializeController() {
+    if (!mounted) return;
+    
     try {
-      print("Initializing video for path: ${widget.feedPath}");
-      // Get the actual video path from the test videos map
-      final Map<String, String> testVideos = {
-        'camera/feed1': 'assets/test_videos/thief_video.mp4',
-        'camera/feed2': 'assets/test_videos/thief_video2.mp4',
-        'camera/feed3': 'assets/test_videos/thief_video3.mp4',
-      };
+      print("Initializing WebView for url: ${widget.url}");
+      print("Using video feed URL: $_videoUrl");
       
-      final videoPath = testVideos[widget.feedPath];
-      if (videoPath == null) {
-        throw Exception('Video path not found');
-      }
-
-      _controller = VideoPlayerController.asset(videoPath);
-      await _controller.initialize();
-      _controller.setLooping(true);
-      await _controller.play();
-      if (mounted) {
-        setState(() {});
-      }
+      _controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        // Add additional WebView settings for performance
+        ..enableZoom(false)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {
+              print('Single camera - Page started loading: $url');
+            },
+            onPageFinished: (String url) {
+              print('Single camera - Page finished loading: $url');
+              if (mounted) {
+                setState(() {
+                  _isLoading = false;
+                });
+              }
+            },
+            onWebResourceError: (WebResourceError error) {
+              print("Single camera - WebView error: ${error.description}, errorType: ${error.errorType}, errorCode: ${error.errorCode}");
+              if (mounted) {
+                setState(() {
+                  _isLoading = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error loading camera: ${error.description}'),
+                    duration: Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: 'Retry',
+                      onPressed: () {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        _initializeController();
+                      },
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse(_videoUrl));
+      
+      // Add a timeout to handle slow loading
+      Future.delayed(const Duration(seconds: 10), () {
+        if (_isLoading && mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+      
     } catch (e) {
-      print("Error initializing video controller: $e");
+      print("Error initializing WebView controller: $e");
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading video: $e')),
+          SnackBar(
+            content: Text('Error loading camera: $e'),
+            duration: Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                });
+                _initializeController();
+              },
+            ),
+          ),
         );
       }
     }
@@ -79,24 +175,199 @@ class _SingleCameraPageState extends ConsumerState<SingleCameraPage> {
   void _onTapDown(TapDownDetails details) {
     if (!_isSettingBoundary) return;
 
-    final boundaryPointsNotifier = ref.read(boundaryPointsProvider(widget.feedPath).notifier);
+    final boundaryPointsNotifier = ref.read(boundaryPointsProvider(widget.url).notifier);
     boundaryPointsNotifier.addPoint(details.localPosition);
   }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  
+  Widget _buildCameraFeed() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 10),
+            Text(
+              'Loading video feed...',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // If using SimpleMjpegImage (recommended for best performance and reliability)
+    if (_loadingMethod == CameraLoadingMethod.simpleMjpegImage) {
+      return SimpleMjpegImage(
+        streamUrl: _videoUrl,
+        fit: BoxFit.contain,
+        refreshInterval: const Duration(milliseconds: 1000),
+        loadingWidget: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 10),
+              Text(
+                'Loading video feed...',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        errorWidget: Icon(Icons.error_outline, color: Colors.red, size: 48),
+      );
+    }
+    
+    // If using MjpegImage
+    if (_loadingMethod == CameraLoadingMethod.mjpegImage) {
+      return MjpegImage(
+        streamUrl: _videoUrl,
+        fit: BoxFit.contain,
+        refreshInterval: const Duration(milliseconds: 100),
+        onLoading: (isLoading) {
+          if (mounted && _isLoading != isLoading) {
+            setState(() {
+              _isLoading = isLoading;
+            });
+          }
+        },
+        loadingWidget: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 10),
+              Text(
+                'Loading video feed...',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        errorWidget: Icon(Icons.error_outline, color: Colors.red, size: 48),
+      );
+    }
+    
+    // If using MJPEG viewer
+    if (_loadingMethod == CameraLoadingMethod.mjpegViewer) {
+      return MjpegViewer(
+        streamUrl: _videoUrl,
+        fit: BoxFit.contain,
+        onLoading: (isLoading) {
+          if (mounted && _isLoading != isLoading) {
+            setState(() {
+              _isLoading = isLoading;
+            });
+          }
+        },
+        loadingWidget: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 10),
+              Text(
+                'Loading video feed...',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        errorWidget: Icon(Icons.error_outline, color: Colors.red, size: 48),
+      );
+    }
+    
+    // If using direct image loading
+    if (_loadingMethod == CameraLoadingMethod.directImage) {
+      return Image.network(
+        _videoUrl,
+        fit: BoxFit.contain,
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (frame == null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Loading video feed...',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            );
+          }
+          return child;
+        },
+        errorBuilder: (context, error, stackTrace) {
+          print('Error loading image: $error');
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red, size: 48),
+                SizedBox(height: 16),
+                Text('Unable to connect to camera',
+                    style: Theme.of(context).textTheme.bodyMedium),
+                SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      
+                      // Force refresh by setting state after a short delay
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        if (mounted) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      });
+                    });
+                  },
+                  child: Text('Retry Connection'),
+                ),
+              ],
+            ),
+          );
+        },
+        // Add a key with timestamp to force refresh
+        key: ValueKey('${_videoUrl}_${DateTime.now().millisecondsSinceEpoch}'),
+        gaplessPlayback: true,
+      );
+    }
+    
+    // Otherwise use WebView
+    return WebViewWidget(controller: _controller);
   }
 
   @override
   Widget build(BuildContext context) {
     // Use the provider to get the current boundary points
-    final boundaryPoints = ref.watch(boundaryPointsProvider(widget.feedPath));
+    final boundaryPoints = ref.watch(boundaryPointsProvider(widget.url));
 
-    if (!_controller.value.isInitialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+    if (_isLoading && _loadingMethod == CameraLoadingMethod.webView) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.label),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 10),
+              Text(
+                'Loading video feed...',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -113,9 +384,9 @@ class _SingleCameraPageState extends ConsumerState<SingleCameraPage> {
               setState(() {
                 if (_isSettingBoundary) {
                   _isSettingBoundary = false;
-                  ref.read(boundaryPointsProvider(widget.feedPath).notifier).saveBoundary();
+                  ref.read(boundaryPointsProvider(widget.url).notifier).saveBoundary();
                 } else {
-                  ref.read(boundaryPointsProvider(widget.feedPath).notifier).clearPoints();
+                  ref.read(boundaryPointsProvider(widget.url).notifier).clearPoints();
                   _isSettingBoundary = true;
                 }
               });
@@ -127,10 +398,7 @@ class _SingleCameraPageState extends ConsumerState<SingleCameraPage> {
         onTapDown: _onTapDown,
         child: Stack(
           children: [
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
+            _buildCameraFeed(),
             if (boundaryPoints.isNotEmpty)
               CustomPaint(
                 size: Size.infinite,

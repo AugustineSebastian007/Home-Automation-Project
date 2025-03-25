@@ -12,42 +12,40 @@ class ProfileRepository {
     return _firestoreService.streamProfiles();
   }
 
-  Stream<ProfileModel> streamProfile(String profileId) {
-    return _firestoreService.streamProfile(profileId);
+  Stream<ProfileModel> streamProfile(String memberId, String profileId) {
+    return _firestoreService.streamProfile(memberId, profileId);
   }
 
-  Future<void> addProfile(ProfileModel profile) async {
-    await _firestoreService.addProfile(profile);
+  Future<void> addProfile(String memberId, ProfileModel profile) async {
+    await _firestoreService.addProfile(memberId, profile);
   }
 
-  Future<void> updateProfile(ProfileModel profile) async {
-    await _firestoreService.updateProfile(profile);
+  Future<void> updateProfile(String memberId, ProfileModel profile) async {
+    await _firestoreService.updateProfile(memberId, profile);
   }
 
-  Future<void> deleteProfile(String profileId) async {
-    await _firestoreService.deleteProfile(profileId);
+  Future<void> deleteProfile(String memberId, String profileId) async {
+    await _firestoreService.deleteProfile(memberId, profileId);
   }
 
-  Future<void> addDeviceToProfile(String profileId, String deviceId) async {
+  Future<void> addDeviceToProfile(String memberId, String profileId, String deviceId) async {
     final profile = await _firestoreService.getProfile(profileId);
     if (!profile.deviceIds.contains(deviceId)) {
       profile.deviceIds.add(deviceId);
-      await _firestoreService.updateProfile(profile);
+      await _firestoreService.updateProfile(memberId, profile);
     }
   }
 
-  Future<void> toggleAllDevicesInProfile(String profileId, bool isActive, WidgetRef ref) async {
+  Future<void> toggleAllDevicesInProfile(String memberId, String profileId, bool isActive, WidgetRef ref) async {
     try {
       final profile = await _firestoreService.getProfile(profileId);
       final deviceToggleVM = ref.read(deviceToggleVMProvider.notifier);
 
-      // Create a list to track any failed toggles
       List<String> failedDevices = [];
 
       for (final deviceId in profile.deviceIds) {
         try {
           final deviceAsyncValue = await ref.read(selectedDeviceStreamProvider(deviceId).future);
-          // Remove the condition and always toggle to match the desired state
           await deviceToggleVM.toggleDevice(deviceAsyncValue.copyWith(isSelected: !isActive));
         } catch (e) {
           failedDevices.add(deviceId);
@@ -55,11 +53,9 @@ class ProfileRepository {
         }
       }
 
-      // Update profile status even if some devices failed
       final updatedProfile = profile.copyWith(isActive: isActive);
-      await _firestoreService.updateProfile(updatedProfile);
+      await _firestoreService.updateProfile(memberId, updatedProfile);
 
-      // If any devices failed, throw an exception
       if (failedDevices.isNotEmpty) {
         throw Exception('Failed to toggle ${failedDevices.length} devices');
       }

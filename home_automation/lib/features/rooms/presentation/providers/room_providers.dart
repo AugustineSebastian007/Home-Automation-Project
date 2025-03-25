@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/rooms/data/models/room.model.dart';
 import 'package:home_automation/features/rooms/data/repositories/room_repository.dart';
-import 'package:home_automation/features/shared/services/firestore.service.dart';
 import 'package:home_automation/features/auth/presentation/providers/auth_providers.dart' show authStateProvider;
 import 'package:home_automation/features/outlets/presentation/providers/outlet_providers.dart';
 import 'package:home_automation/features/devices/presentation/providers/device_providers.dart' show deviceRepositoryProvider;
@@ -37,9 +36,14 @@ final userRoomsProvider = Provider<AsyncValue<List<RoomModel>>>((ref) {
   );
 });
 
-final mainRoomProvider = FutureProvider<RoomModel>((ref) async {
+final mainRoomProvider = FutureProvider<RoomModel?>((ref) async {
   final repository = ref.read(roomRepositoryProvider);
   final mainRoom = await repository.getMainRoom();
-  await ref.read(deviceRepositoryProvider).ensureMainRoomDevices(mainRoom.id, mainRoom.defaultOutlet!.id);
+  
+  // If main room exists and has a default outlet, ensure devices
+  if (mainRoom != null && mainRoom.defaultOutlet != null) {
+    await ref.read(deviceRepositoryProvider).ensureMainRoomDevices(mainRoom.id, mainRoom.defaultOutlet!.id);
+  }
+  
   return mainRoom;
 });

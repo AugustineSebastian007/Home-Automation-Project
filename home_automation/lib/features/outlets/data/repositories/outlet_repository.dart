@@ -19,7 +19,7 @@ class OutletRepository {
   }
 
   Future<void> removeOutlet(String roomId, String outletId) async {
-    await _firestoreService.deleteDocument('outlets', outletId);
+    await _firestoreService.removeOutlet(roomId, outletId);
   }
 
   Future<void> removeAllOutlets(String roomId) async {

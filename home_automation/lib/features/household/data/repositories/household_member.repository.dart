@@ -2,12 +2,9 @@ import 'package:home_automation/features/household/data/models/household_member.
 import 'package:home_automation/features/shared/services/firestore.service.dart';
 import 'package:camera/camera.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:image/image.dart';
-import 'dart:ui' as ui;
 
 class HouseholdMemberRepository {
   final FirestoreService _firestoreService;
@@ -144,12 +141,32 @@ class HouseholdMemberRepository {
     }
 
     try {
+      // First verify the profile exists
+      await _firestoreService.getProfile(profileId);
+      
+      // Then update the household member
       await _firestoreService.updateHouseholdMember(
         memberId, 
         {'profileId': profileId}
       );
     } catch (e) {
       throw Exception('Failed to link member to profile: $e');
+    }
+  }
+
+  Future<void> unlinkMemberFromProfile(String memberId) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User must be logged in to unlink members from profiles');
+    }
+
+    try {
+      await _firestoreService.updateHouseholdMember(
+        memberId, 
+        {'profileId': null}
+      );
+    } catch (e) {
+      throw Exception('Failed to unlink member from profile: $e');
     }
   }
 }

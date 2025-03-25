@@ -73,7 +73,7 @@ class AppRoutes {
               return NoTransitionPage(
                 child: SingleCameraPage(
                   label: args['label'] as String,
-                  feedPath: args['feedPath'] as String,
+                  url: args['url'] as String,
                 ),
               );
             },
@@ -149,6 +149,7 @@ class AppRoutes {
         path: ProfileDetailsPage.route,
         builder: (context, state) => ProfileDetailsPage(
           profileId: state.pathParameters['id']!,
+          memberId: state.pathParameters['memberId']!,
         ),
       ),
       GoRoute(

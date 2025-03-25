@@ -5,6 +5,7 @@ import 'package:home_automation/features/rooms/data/models/room.model.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 import 'package:home_automation/features/household/data/models/household_member.model.dart';
+import 'package:rxdart/rxdart.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -287,13 +288,26 @@ class FirestoreService {
   }
 
   Future<ProfileModel> getProfile(String profileId) async {
-    final doc = await _firestore
+    final membersSnapshot = await _firestore
         .collection('users')
         .doc(userId)
-        .collection('profiles')
-        .doc(profileId)
+        .collection('household_members')
         .get();
-    return ProfileModel.fromJson(doc.data()!);
+
+    for (var memberDoc in membersSnapshot.docs) {
+      final profileDoc = await memberDoc.reference
+          .collection('profiles')
+          .doc(profileId)
+          .get();
+
+      if (profileDoc.exists) {
+        final data = profileDoc.data()!;
+        data['memberId'] = memberDoc.id;
+        data['id'] = profileId;
+        return ProfileModel.fromJson(data);
+      }
+    }
+    throw Exception('Profile not found');
   }
 
   Future<void> deleteDocument(String collection, String documentId) async {
@@ -318,44 +332,81 @@ class FirestoreService {
     return _firestore
         .collection('users')
         .doc(userId)
-        .collection('profiles')
+        .collection('household_members')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ProfileModel.fromJson(doc.data()))
-            .toList());
+        .switchMap((memberSnapshot) {
+          final profileStreams = memberSnapshot.docs.map((memberDoc) {
+            return memberDoc.reference
+                .collection('profiles')
+                .snapshots()
+                .map((profileSnapshot) {
+                  return profileSnapshot.docs.map((profileDoc) {
+                    final data = profileDoc.data();
+                    data['memberId'] = memberDoc.id;
+                    data['id'] = profileDoc.id;
+                    return ProfileModel.fromJson(data);
+                  }).toList();
+                });
+          });
+
+          if (profileStreams.isEmpty) {
+            return Stream.value(<ProfileModel>[]);
+          }
+
+          return Rx.combineLatestList(profileStreams).map((listOfProfileLists) {
+            return listOfProfileLists.expand((profiles) => profiles).toList();
+          });
+        });
   }
 
-  Stream<ProfileModel> streamProfile(String profileId) {
+  Stream<ProfileModel> streamProfile(String memberId, String profileId) {
     return _firestore
         .collection('users')
         .doc(userId)
+        .collection('household_members')
+        .doc(memberId)
         .collection('profiles')
         .doc(profileId)
         .snapshots()
-        .map((snapshot) => ProfileModel.fromJson(snapshot.data()!));
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            throw Exception('Profile not found');
+          }
+          final data = snapshot.data()!;
+          data['memberId'] = memberId;
+          data['id'] = profileId;
+          return ProfileModel.fromJson(data);
+        });
   }
 
-  Future<void> addProfile(ProfileModel profile) async {
+  Future<void> addProfile(String memberId, ProfileModel profile) async {
     await _firestore
         .collection('users')
         .doc(userId)
+        .collection('household_members')
+        .doc(memberId)
         .collection('profiles')
         .doc(profile.id)
         .set(profile.toJson());
   }
 
-  Future<void> updateProfile(ProfileModel profile) async {
+  Future<void> updateProfile(String memberId, ProfileModel profile) async {
     await _firestore
         .collection('users')
         .doc(userId)
+        .collection('household_members')
+        .doc(memberId)
         .collection('profiles')
         .doc(profile.id)
         .update(profile.toJson());
   }
-  Future<void> deleteProfile(String profileId) async {
+
+  Future<void> deleteProfile(String memberId, String profileId) async {
     await _firestore
         .collection('users')
         .doc(userId)
+        .collection('household_members')
+        .doc(memberId)
         .collection('profiles')
         .doc(profileId)
         .delete();

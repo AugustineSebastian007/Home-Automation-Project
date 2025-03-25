@@ -54,22 +54,39 @@ final deviceStreamProvider = StreamProvider.family<DeviceModel, ({String roomId,
 
 final mainRoomDevicesProvider = FutureProvider<List<DeviceModel>>((ref) async {
   final mainRoom = await ref.watch(mainRoomProvider.future);
+  
+  // Return empty list if main room doesn't exist
+  if (mainRoom == null) {
+    return [];
+  }
+  
   final repository = ref.read(deviceRepositoryProvider);
   final outletId = mainRoom.defaultOutlet?.id;
   
+  // Return empty list if no default outlet
   if (outletId == null) {
-    throw Exception('Main room has no default outlet');
+    return [];
   }
   
   return await repository.getDevices(mainRoom.id, outletId);
 });
 
-final mainRoomDeviceStreamProvider = StreamProvider.family<DeviceModel, String>((ref, deviceId) {
+final mainRoomDeviceStreamProvider = StreamProvider.family<DeviceModel?, String>((ref, deviceId) {
   final repository = ref.read(deviceRepositoryProvider);
-  return repository.streamMainRoomDevice(deviceId);
+  try {
+    return repository.streamMainRoomDevice(deviceId);
+  } catch (e) {
+    // Return a stream with null if the main room or device doesn't exist
+    return Stream.value(null);
+  }
 });
 
 final mainRoomDevicesStreamProvider = StreamProvider<List<DeviceModel>>((ref) {
   final repository = ref.read(deviceRepositoryProvider);
-  return repository.streamMainRoomDevices();
+  try {
+    return repository.streamMainRoomDevices();
+  } catch (e) {
+    // Return an empty list if the main room doesn't exist
+    return Stream.value([]);
+  }
 });

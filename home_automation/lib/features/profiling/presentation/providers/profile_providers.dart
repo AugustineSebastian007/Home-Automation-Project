@@ -13,9 +13,9 @@ final profileListProvider = StreamProvider<List<ProfileModel>>((ref) {
   return repository.streamProfiles();
 });
 
-final profileProvider = StreamProvider.family<ProfileModel, String>((ref, profileId) {
+final profileProvider = StreamProvider.family<ProfileModel, (String memberId, String profileId)>((ref, params) {
   final repository = ref.read(profileRepositoryProvider);
-  return repository.streamProfile(profileId);
+  return repository.streamProfile(params.$1, params.$2);
 });
 
 final allDevicesProvider = StreamProvider<List<DeviceModel>>((ref) {
@@ -23,12 +23,31 @@ final allDevicesProvider = StreamProvider<List<DeviceModel>>((ref) {
   return repository.streamAllDevices();
 });
 
-final profileWithDevicesProvider = StreamProvider.family<(ProfileModel, List<DeviceModel>), String>((ref, profileId) {
-  final profileStream = ref.watch(profileProvider(profileId).stream);
-  final allDevicesStream = ref.watch(allDevicesProvider.stream);
+final profileWithDevicesProvider = StreamProvider.family.autoDispose<(ProfileModel, List<DeviceModel>), (String memberId, String profileId)>((ref, params) {
+  // Create a single subscription that combines both streams
+  final combinedStream = Rx.combineLatest2(
+    ref.watch(profileProvider(params).stream),
+    ref.watch(allDevicesProvider.stream),
+    (ProfileModel profile, List<DeviceModel> devices) {
+      final profileDevices = profile.deviceIds.isEmpty 
+          ? <DeviceModel>[] 
+          : devices.where((device) => profile.deviceIds.contains(device.id)).toList();
+      
+      return (profile, profileDevices);
+    },
+  ).distinct((previous, next) => 
+    previous.$1.id == next.$1.id && 
+    previous.$2.length == next.$2.length
+  );
 
-  return Rx.combineLatest2(profileStream, allDevicesStream, (profile, devices) {
-    final profileDevices = devices.where((device) => profile.deviceIds.contains(device.id)).toList();
-    return (profile, profileDevices);
+  // Handle cleanup when switching profiles
+  ref.onDispose(() {
+    ref.invalidate(profileProvider(params));
+    ref.invalidate(allDevicesProvider);
   });
+
+  return combinedStream;
 });
+
+// Add a new provider to handle the currently selected profile
+final selectedProfileIdProvider = StateProvider.autoDispose<String?>((ref) => null);

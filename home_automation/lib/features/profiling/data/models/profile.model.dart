@@ -3,12 +3,14 @@ class ProfileModel {
   final String name;
   final List<String> deviceIds;
   final bool isActive;
+  final String memberId;
 
   ProfileModel({
     required this.id,
     required this.name,
     required this.deviceIds,
     this.isActive = false,
+    required this.memberId,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class ProfileModel {
       name: json['name'] as String,
       deviceIds: List<String>.from(json['deviceIds'] as List),
       isActive: json['isActive'] as bool? ?? false,
+      memberId: json['memberId'] as String,
     );
   }
 
@@ -26,6 +29,7 @@ class ProfileModel {
       'name': name,
       'deviceIds': deviceIds,
       'isActive': isActive,
+      'memberId': memberId,
     };
   }
 
@@ -34,12 +38,14 @@ class ProfileModel {
     String? name,
     List<String>? deviceIds,
     bool? isActive,
+    String? memberId,
   }) {
     return ProfileModel(
       id: id ?? this.id,
       name: name ?? this.name,
       deviceIds: deviceIds ?? this.deviceIds,
       isActive: isActive ?? this.isActive,
+      memberId: memberId ?? this.memberId,
     );
   }
 }

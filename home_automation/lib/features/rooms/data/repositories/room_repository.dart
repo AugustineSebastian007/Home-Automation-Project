@@ -23,9 +23,6 @@ class RoomRepository {
 
   Future<void> addRoom(RoomModel room) async {
     await _firestoreService.addRoom(room);
-    if (room.defaultOutlet != null) {
-      await _outletRepository.addOutlet(room.id, room.defaultOutlet!);
-    }
   }
 
   Stream<List<RoomModel>> streamRooms(String userId) {
@@ -36,26 +33,14 @@ class RoomRepository {
     await _firestoreService.removeRoom(roomId);
   }
 
-  Future<RoomModel> getMainRoom() async {
+  Future<RoomModel?> getMainRoom() async {
     const String mainRoomId = 'main_room';
-    final existingRoom = await _firestoreService.getRoom(mainRoomId);
-    if (existingRoom != null) {
+    try {
+      final existingRoom = await _firestoreService.getRoom(mainRoomId);
       return existingRoom;
+    } catch (e) {
+      // Main room doesn't exist, just return null instead of creating it
+      return null;
     }
-
-    final mainRoom = RoomModel(
-      id: mainRoomId,
-      name: 'Main Room',
-      deviceCount: 5,
-      defaultOutlet: OutletModel(
-        id: 'esp32',
-        label: 'ESP32',
-        ip: '192.168.1.100',
-        roomId: mainRoomId,
-      ),
-    );
-    await _firestoreService.addRoom(mainRoom);
-    await _outletRepository.addOutlet(mainRoomId, mainRoom.defaultOutlet!);
-    return mainRoom;
   }
 }
