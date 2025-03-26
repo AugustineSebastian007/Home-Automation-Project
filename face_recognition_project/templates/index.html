@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .button-container {
+            margin: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .entry-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .exit-button {
+            background-color: #f44336;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        img {
+            width: 100vw; /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            object-fit: contain; /* Maintain aspect ratio without stretching */
+        }
+    </style>
+</head>
+<body>
+    <h1>Attendance System</h1>
+    <div class="button-container">
+        <button class="entry-button" onclick="markAttendance('entry')">Mark Entry</button>
+        <button class="exit-button" onclick="markAttendance('exit')">Mark Exit</button>
+    </div>
+    <img src="{{ url_for('video_feed') }}" alt="Video Feed">
+    <script>
+        function markAttendance(type) {
+            fetch('/mark_attendance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ type: type })
+            });
+        }
+    </script>
+</body>
+</html>
