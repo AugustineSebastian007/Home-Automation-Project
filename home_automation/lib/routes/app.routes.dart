@@ -20,6 +20,7 @@ import 'package:home_automation/features/outlets/presentation/pages/add_outlet_p
 import 'package:home_automation/features/profiling/presentation/pages/profiling.page.dart';
 import 'package:home_automation/features/profiling/presentation/pages/add_profile.page.dart';
 import 'package:home_automation/features/profiling/presentation/pages/profile_details.page.dart';
+import 'package:home_automation/features/energy/presentation/pages/energy_saving.page.dart';
 
 import '../features/rooms/presentation/pages/dummy_main_hall.page.dart';
 import '../features/camera/presentation/pages/camera_footage.page.dart';
@@ -155,6 +156,10 @@ class AppRoutes {
       GoRoute(
         path: '/dummy-main-hall',
         builder: (context, state) => DummyMainHallPage(),
+      ),
+      GoRoute(
+        path: '/energy-saving',
+        builder: (context, state) => const EnergySavingPage(),
       ),
       GoRoute(
         path: HouseholdMembersPage.route,

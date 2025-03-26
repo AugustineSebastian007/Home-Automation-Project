@@ -5,7 +5,6 @@ import 'package:home_automation/features/landing/data/models/home_tile_option.da
 import 'package:home_automation/features/landing/data/repositories/energy_consumption_data.repository.dart';
 import 'package:home_automation/features/landing/data/repositories/home_tile_options.repository.dart';
 import 'package:home_automation/features/landing/presentation/viewmodels/home_tile_options.viewmodel.dart';
-import 'package:home_automation/features/devices/data/repositories/devices.repository.dart';
 import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
 import 'package:home_automation/features/landing/data/models/energy_consumption.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';

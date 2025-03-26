@@ -1,7 +1,6 @@
 import 'package:home_automation/features/rooms/data/models/room.model.dart';
 import 'package:home_automation/features/shared/services/firestore.service.dart';
 import 'package:home_automation/features/outlets/data/repositories/outlet_repository.dart';
-import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 
 class RoomRepository {
   final FirestoreService _firestoreService;

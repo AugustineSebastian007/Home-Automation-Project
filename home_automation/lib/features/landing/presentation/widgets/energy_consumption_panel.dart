@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/landing/presentation/providers/landing_providers.dart';
 import 'package:home_automation/features/landing/presentation/widgets/energy_consumption_column.dart';
-import 'package:home_automation/styles/styles.dart';
 import 'package:intl/intl.dart';
 import 'package:home_automation/features/landing/data/models/energy_consumption_value.dart';
 

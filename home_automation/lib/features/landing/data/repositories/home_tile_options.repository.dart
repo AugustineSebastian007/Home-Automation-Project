@@ -17,6 +17,11 @@ class HomeTileOptionsRepository {
         label: 'Manage Devices', 
         option: HomeTileOptions.manageDevices,
       ),
+      HomeTileOption(
+        icon: Icons.energy_savings_leaf,
+        label: 'Energy Saving', 
+        option: HomeTileOptions.energySaving,
+      ),
       // HomeTileOption(
       //   icon: Icons.sensors,
       //   label: 'Test Connectivity', 

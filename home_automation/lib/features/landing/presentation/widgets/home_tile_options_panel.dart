@@ -59,6 +59,8 @@ class HomeTileOptionsPanel extends ConsumerWidget {
                       onTap: (selectedTile, context) {
                         if (selectedTile.label == 'Manage Devices') {
                           context.go('/rooms');
+                        } else if (selectedTile.label == 'Energy Saving') {
+                          context.go('/energy-saving');
                         } else {
                           ref.read(homeTileOptionsVMProvider.notifier).onTileSelected(selectedTile);
                         }

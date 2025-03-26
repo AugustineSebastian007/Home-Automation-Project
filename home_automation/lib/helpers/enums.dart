@@ -31,6 +31,7 @@ enum FlickyAnimatedIconSizes {
 enum HomeTileOptions {
   addDevice,
   manageDevices,
+  energySaving,
   testConnection
 }
 
