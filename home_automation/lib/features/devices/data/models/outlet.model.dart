@@ -1,5 +1,5 @@
 class OutletModel {
-  final int id;
+  final String id;
   final String ip;
   final String label;
   final bool isTaken;
@@ -13,7 +13,7 @@ class OutletModel {
 
   // Add this method
   OutletModel copyWith({
-    int? id,
+    String? id,
     String? ip,
     String? label,
     bool? isTaken,
@@ -28,9 +28,9 @@ class OutletModel {
 
   factory OutletModel.fromJson(Map<String, dynamic> json) {
     return OutletModel(
-      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()), // Ensure id is parsed as int
-      ip: json['ip'] ?? '', // Provide a default value if null
-      label: json['label'] ?? '', // Provide a default value if null
+      id: json['id'].toString(), // Ensure id is stored as String
+      ip: json['ip'] ?? '',
+      label: json['label'] ?? '',
       isTaken: json['isTaken'] ?? false,
     );
   }

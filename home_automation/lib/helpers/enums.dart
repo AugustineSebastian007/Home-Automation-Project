@@ -6,12 +6,15 @@ enum FlickyAnimatedIconOptions {
   barrooms,
   bardevices,
   barsettings,
+  barprofile,
   lightbulb,
   fan,
   hairdryer,
   bolt,
   ac,
   oven,
+  lamp,
+  camera,
 }
 
 enum FlickyAnimatedIconSizes {
@@ -28,6 +31,7 @@ enum FlickyAnimatedIconSizes {
 enum HomeTileOptions {
   addDevice,
   manageDevices,
+  energySaving,
   testConnection
 }
 
