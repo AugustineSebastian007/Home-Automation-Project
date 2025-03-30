@@ -32,6 +32,10 @@ class RoomRepository {
     await _firestoreService.removeRoom(roomId);
   }
 
+  Future<void> updateRoomDeviceCount(String roomId) async {
+    await _firestoreService.updateRoomDeviceCount(roomId);
+  }
+
   Future<RoomModel?> getMainRoom() async {
     const String mainRoomId = 'main_room';
     try {

@@ -8,6 +8,14 @@ import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:home_automation/features/navigation/providers/navigation_providers.dart';
+import 'package:home_automation/features/landing/presentation/responsiveness/landing_page_responsive.config.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:home_automation/features/landing/presentation/pages/home.page.dart';
+import 'package:home_automation/features/rooms/presentation/pages/rooms.page.dart';
+import 'package:home_automation/features/camera/presentation/pages/camera_footage.page.dart';
+import 'package:home_automation/features/profiling/presentation/pages/profiling.page.dart';
+import 'package:home_automation/features/settings/presentation/pages/settings.page.dart';
 
 class DevicesPage extends ConsumerWidget {
   static const String route = '/devices/:roomId/:outletId';
@@ -19,6 +27,8 @@ class DevicesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final devicesAsyncValue = ref.watch(deviceListStreamProvider((roomId: roomId, outletId: outletId)));
+    final barItems = ref.watch(bottomBarVMProvider);
+    final config = LandingPageResponsiveConfig.landingPageConfig(context);
 
     return Scaffold(
       appBar: HomeAutomationAppBar(
@@ -56,6 +66,52 @@ class DevicesPage extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        padding: HomeAutomationStyles.xsmallPadding,
+        color: config.bottomBarBg,
+        child: Flex(
+          direction: config.bottomBarDirection,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: barItems.map((e) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: HomeAutomationStyles.smallSize),
+              child: IconButton(
+                onPressed: () {
+                  // Direct navigation using context instead of the tabNav
+                  switch (e.route) {
+                    case HomePage.route:
+                      context.go(HomePage.route);
+                      break;
+                    case RoomsPage.route:
+                      context.go(RoomsPage.route);
+                      break;
+                    case CameraFootagePage.route:
+                      context.go(CameraFootagePage.route);
+                      break;
+                    case ProfilingPage.route:
+                      context.go(ProfilingPage.route);
+                      break;
+                    case SettingsPage.route:
+                      context.go(SettingsPage.route);
+                      break;
+                  }
+                },
+                icon: FlickyAnimatedIcons(
+                  icon: e.iconOption,
+                  isSelected: e.isSelected,
+                )
+              ),
+            );
+          }).toList()
+          .animate(
+            interval: 200.ms
+          ).slideY(
+            begin: 1, end: 0,
+            duration: 0.5.seconds,
+            curve: Curves.easeInOut
+          ),
+        ),
       ),
     );
   }

@@ -40,6 +40,9 @@ class RemoveOutletPage extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final outlet = outlets[index];
                     return Card(
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? Color(0xFF2A2A2A) // Dark gray for dark mode
+                          : null, // Default color for light mode
                       child: ListTile(
                         leading: Icon(Icons.power, color: Theme.of(context).colorScheme.primary),
                         title: Text(outlet.label),

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:home_automation/features/rooms/presentation/providers/add_room_providers.dart';
 import 'package:home_automation/features/rooms/presentation/providers/room_providers.dart';
+import 'package:home_automation/features/rooms/presentation/widgets/add_room_sheet.dart';
 import 'package:home_automation/features/rooms/presentation/widgets/rooms_list.dart';
 import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
-
+import 'package:home_automation/helpers/utils.dart';
 
 class RoomsPage extends ConsumerWidget {
   static const String route = '/rooms';
@@ -16,6 +17,11 @@ class RoomsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userRoomsAsyncValue = ref.watch(userRoomsProvider);
+    
+    // Refresh device counts when the page builds
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.refresh(updateAllRoomDeviceCountsProvider);
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -40,52 +46,19 @@ class RoomsPage extends ConsumerWidget {
           ],
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton(
-              onPressed: () => context.push('/add-room'),
-              child: Icon(Icons.add),
-              heroTag: 'addRoom',
-            ),
-            SizedBox(width: 16),
-            FloatingActionButton(
-              onPressed: () => _showRemoveRoomDialog(context, ref),
-              child: Icon(Icons.remove),
-              heroTag: 'removeRoom',
-              backgroundColor: Colors.red,
-            ),
-          ],
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Utils.showUIModal(
+            context,
+            const AddRoomSheet(),
+            onDismissed: () {
+              ref.read(saveAddRoomProvider.notifier).resetAllValues();
+            }
+          );
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
-
-  void _showRemoveRoomDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Remove Room'),
-          content: Text('Are you sure you want to remove a room?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: Text('Remove'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.goNamed('remove-room');
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

@@ -47,3 +47,26 @@ final mainRoomProvider = FutureProvider<RoomModel?>((ref) async {
   
   return mainRoom;
 });
+
+final updateRoomDeviceCountProvider = FutureProvider.family<void, String>((ref, roomId) async {
+  final repository = ref.read(roomRepositoryProvider);
+  await repository.updateRoomDeviceCount(roomId);
+});
+
+final updateAllRoomDeviceCountsProvider = FutureProvider<void>((ref) async {
+  final authState = ref.watch(authStateProvider);
+  return authState.when(
+    data: (user) async {
+      if (user == null) return;
+
+      final repository = ref.read(roomRepositoryProvider);
+      final rooms = await ref.watch(roomListStreamProvider(user.uid).future);
+      
+      for (final room in rooms) {
+        await repository.updateRoomDeviceCount(room.id);
+      }
+    },
+    loading: () => null,
+    error: (error, stack) => null,
+  );
+});

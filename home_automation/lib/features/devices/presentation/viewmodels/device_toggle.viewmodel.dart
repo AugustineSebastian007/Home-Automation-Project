@@ -50,4 +50,42 @@ class DeviceToggleViewModel extends StateNotifier<bool> {
       state = false;
     }
   }
+  
+  // Method to directly set a device state without toggling it
+  Future<void> setDeviceState(DeviceModel device) async {
+    if (state) return; // Prevent multiple simultaneous toggles
+    
+    state = true;
+    try {
+      print("Setting device state: ${device.toJson()}");
+      if (device.id.isEmpty) {
+        throw Exception("Cannot set state of device with empty ID");
+      }
+      
+      // Send the device state to the service
+      final response = await ref.read(deviceServiceProvider).toggleDevice(device);
+      
+      if (response.success) {
+        await Future.delayed(300.milliseconds);
+        // Update the local storage with the new state
+        await ref.read(deviceRepositoryProvider).updateDevice(
+          device.roomId,
+          device.outletId,
+          device
+        );
+        
+        // Update the UI with the new state
+        ref.read(deviceListVMProvider.notifier).updateDevice(device);
+        
+        print("Device state set successfully: ${device.toJson()}");
+      } else {
+        throw Exception("Failed to set device state: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error in setDeviceState: $e");
+      throw e;
+    } finally {
+      state = false;
+    }
+  }
 }

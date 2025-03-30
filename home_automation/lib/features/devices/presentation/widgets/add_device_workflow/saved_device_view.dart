@@ -2,9 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:home_automation/styles/styles.dart';
 
-class SavedDeviceView extends StatelessWidget {
+class SavedDeviceView extends StatefulWidget {
   const SavedDeviceView({super.key});
 
+  @override
+  State<SavedDeviceView> createState() => _SavedDeviceViewState();
+}
+
+class _SavedDeviceViewState extends State<SavedDeviceView> {
+  
+  @override
+  void initState() {
+    super.initState();
+    // Automatically close the sheet after a delay
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return FractionallySizedBox(
@@ -26,13 +43,13 @@ class SavedDeviceView extends StatelessWidget {
               )
             )
           ].animate(
-            interval: 200.ms,
+            interval: 100.ms,
           ).slideY(
             begin: 0.5, end: 0,
-            duration: 0.5.seconds,
+            duration: 0.25.seconds,
             curve: Curves.easeInOut
           ).fadeIn(
-            duration: 0.5.seconds,
+            duration: 0.25.seconds,
             curve: Curves.easeInOut
           ),
         )

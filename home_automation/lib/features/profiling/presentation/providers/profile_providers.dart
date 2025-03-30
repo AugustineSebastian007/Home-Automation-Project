@@ -4,6 +4,7 @@ import 'package:home_automation/features/profiling/data/repositories/profile_rep
 import 'package:home_automation/features/shared/providers/shared_providers.dart' show firestoreServiceProvider;
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/providers/device_providers.dart' hide firestoreServiceProvider;
+import 'package:home_automation/features/devices/presentation/providers/rtdb_device_providers.dart';
 import 'package:rxdart/rxdart.dart';
 
 final profileRepositoryProvider = Provider((ref) => ProfileRepository(ref.read(firestoreServiceProvider)));
@@ -18,9 +19,18 @@ final profileProvider = StreamProvider.family<ProfileModel, (String memberId, St
   return repository.streamProfile(params.$1, params.$2);
 });
 
+// Updated to include both Firestore and RTDB devices
 final allDevicesProvider = StreamProvider<List<DeviceModel>>((ref) {
-  final repository = ref.read(deviceRepositoryProvider);
-  return repository.streamAllDevices();
+  final firestoreDevicesStream = ref.watch(deviceRepositoryProvider).streamAllDevices();
+  final rtdbDevicesStream = ref.watch(rtdbDevicesAsDeviceModelsProvider.stream);
+  
+  return Rx.combineLatest2(
+    firestoreDevicesStream,
+    rtdbDevicesStream,
+    (List<DeviceModel> firestoreDevices, List<DeviceModel> rtdbDevices) {
+      return [...firestoreDevices, ...rtdbDevices];
+    }
+  );
 });
 
 final profileWithDevicesProvider = StreamProvider.family.autoDispose<(ProfileModel, List<DeviceModel>), (String memberId, String profileId)>((ref, params) {

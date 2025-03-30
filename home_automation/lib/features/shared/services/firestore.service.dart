@@ -164,6 +164,9 @@ class FirestoreService {
         .collection('devices')
         .doc(device.id)
         .set(device.toJson());
+    
+    // Update the room's device count
+    await updateRoomDeviceCount(roomId);
   }
 
   Future<void> updateDevice(
@@ -192,6 +195,9 @@ class FirestoreService {
         .collection('devices')
         .doc(deviceId)
         .delete();
+    
+    // Update the room's device count
+    await updateRoomDeviceCount(roomId);
   }
 
   Stream<List<DeviceModel>> streamDevices(String roomId, String outletId) {
@@ -511,5 +517,47 @@ class FirestoreService {
         .collection('household_members')
         .doc(memberId)
         .delete();
+  }
+
+  // Update room device count
+  Future<void> updateRoomDeviceCount(String roomId) async {
+    try {
+      // Get all outlets in the room
+      final outlets = await getOutlets(roomId);
+      
+      // Count all devices across all outlets
+      int totalDevices = 0;
+      for (var outlet in outlets) {
+        final devices = await getDevices(roomId, outlet.id);
+        totalDevices += devices.length;
+      }
+      
+      // Get the current room data
+      final roomDoc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('rooms')
+          .doc(roomId)
+          .get();
+      
+      if (roomDoc.exists) {
+        final room = RoomModel.fromJson(roomDoc.data()!);
+        
+        // Only update if the count is different
+        if (room.deviceCount != totalDevices) {
+          // Update the room with the new device count
+          await _firestore
+              .collection('users')
+              .doc(userId)
+              .collection('rooms')
+              .doc(roomId)
+              .update({'deviceCount': totalDevices});
+          
+          print('Updated device count for room $roomId to $totalDevices');
+        }
+      }
+    } catch (e) {
+      print('Error updating room device count: $e');
+    }
   }
 }

@@ -11,7 +11,6 @@ import 'package:home_automation/features/landing/presentation/pages/signin.page.
 import 'package:home_automation/features/outlets/presentation/pages/remove_outlet.page.dart';
 import 'package:home_automation/features/rooms/presentation/pages/remove_room.page.dart';
 import 'package:home_automation/features/rooms/presentation/pages/rooms.page.dart';
-import 'package:home_automation/features/rooms/presentation/pages/add_room.page.dart';
 import 'package:home_automation/features/rooms/presentation/pages/room_details.page.dart' as details;
 import 'package:home_automation/features/settings/presentation/pages/settings.page.dart';
 import 'package:home_automation/helpers/utils.dart';
@@ -108,11 +107,6 @@ class AppRoutes {
       ),
       GoRoute(
         parentNavigatorKey: Utils.mainNav,
-        path: AddRoomPage.route,
-        builder: (context, state) => AddRoomPage(),
-      ),
-      GoRoute(
-        parentNavigatorKey: Utils.mainNav,
         path: details.RoomDetailsPage.route,
         builder: (context, state) => details.RoomDetailsPage(roomId: state.pathParameters['id']!),
       ),
@@ -126,12 +120,6 @@ class AppRoutes {
       ),
       GoRoute(
         parentNavigatorKey: Utils.mainNav,
-        name: 'add-outlet',
-        path: '/add-outlet/:roomId',
-        builder: (context, state) => AddOutletPage(roomId: state.pathParameters['roomId']!),
-      ),
-      GoRoute(
-        parentNavigatorKey: Utils.mainNav,
         name: 'remove-outlet',
         path: '/remove-outlet/:roomId',
         builder: (context, state) => RemoveOutletPage(roomId: state.pathParameters['roomId']!),
@@ -141,10 +129,6 @@ class AppRoutes {
         name: 'remove-room',
         path: '/remove-room',
         builder: (context, state) => RemoveRoomPage(),
-      ),
-      GoRoute(
-        path: AddProfilePage.route,
-        builder: (context, state) => AddProfilePage(),
       ),
       GoRoute(
         path: ProfileDetailsPage.route,

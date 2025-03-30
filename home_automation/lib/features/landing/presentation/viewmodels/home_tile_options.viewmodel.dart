@@ -20,9 +20,7 @@ class HomeTileOptionsViewmodel extends StateNotifier<List<HomeTileOption>> {
           Utils.mainNav.currentContext!,
           const AddDeviceSheet(),
           onDismissed: () {
-            Future.delayed(0.25.seconds, () {
-              ref.read(saveAddDeviceVMProvider.notifier).resetAllValues();
-            });
+            ref.read(saveAddDeviceVMProvider.notifier).resetAllValues();
           }
         );
         break;

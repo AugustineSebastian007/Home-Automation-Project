@@ -39,7 +39,6 @@ class AddDeviceSaveViewModel extends StateNotifier<AddDeviceStates> {
       ref.read(device_providers.deviceListVMProvider.notifier).addDevice(deviceToSave);
 
       state = AddDeviceStates.saved;
-      await Future.delayed(const Duration(seconds: 1));
     } catch (e) {
       print('Error saving device: $e');
       state = AddDeviceStates.none;

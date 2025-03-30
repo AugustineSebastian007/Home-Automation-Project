@@ -15,7 +15,10 @@ class DeviceTile extends StatelessWidget {
         ? Theme.of(context).colorScheme.primary
         : Theme.of(context).colorScheme.secondary;
 
-    final bgColor = selectedColor.withOpacity(0.15);
+    // Use dark gray color in dark mode for background, matching the RoomTile
+    final bgColor = Theme.of(context).brightness == Brightness.dark 
+        ? Color(0xFF2A2A2A) // Dark gray for dark mode
+        : selectedColor.withOpacity(0.15); // Original color for light mode
     final splashColor = selectedColor.withOpacity(0.25);
 
     return Container(

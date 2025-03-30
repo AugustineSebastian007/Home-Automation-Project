@@ -8,6 +8,9 @@ import 'package:home_automation/styles/styles.dart';
 import 'package:home_automation/features/profiling/presentation/providers/profile_providers.dart';
 import 'package:home_automation/features/profiling/data/models/profile.model.dart';
 import 'package:go_router/go_router.dart';
+import 'package:home_automation/helpers/utils.dart';
+import 'package:home_automation/features/profiling/presentation/widgets/add_profile_sheet.dart';
+import 'package:home_automation/features/profiling/presentation/providers/add_profile_providers.dart';
 
 class ProfilingPage extends ConsumerWidget {
   static const String route = '/profiling';
@@ -42,7 +45,15 @@ class ProfilingPage extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/add-profile'),
+        onPressed: () {
+          Utils.showUIModal(
+            context,
+            const AddProfileSheet(),
+            onDismissed: () {
+              ref.read(saveAddProfileProvider.notifier).resetValues();
+            }
+          );
+        },
         child: Icon(Icons.add),
       ),
     );
@@ -86,6 +97,8 @@ class ProfilingPage extends ConsumerWidget {
           child: Padding(
             padding: HomeAutomationStyles.mediumPadding,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 FlickyAnimatedIcons(
                   icon: FlickyAnimatedIconOptions.lightbulb,
@@ -112,29 +125,141 @@ class ProfilingPage extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Switch(
-                  value: profile.isActive,
-                  onChanged: (value) async {
-                    try {
-                      await ref.read(profileRepositoryProvider)
-                          .toggleAllDevicesInProfile(profile.memberId, profile.id, value, ref);
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Failed to toggle profile: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                Container(
+                  width: 44,
+                  height: 44,
+                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Material(
+                    color: colorScheme.error.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
+                    child: InkWell(
+                      onTap: () => _showDeleteConfirmation(context, ref, profile),
+                      borderRadius: BorderRadius.circular(HomeAutomationStyles.smallRadius),
+                      splashColor: colorScheme.error.withOpacity(0.2),
+                      highlightColor: colorScheme.error.withOpacity(0.1),
+                      child: Icon(
+                        Icons.delete_rounded,
+                        color: colorScheme.error,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Switch(
+                    value: profile.isActive,
+                    onChanged: (value) async {
+                      try {
+                        await ref.read(profileRepositoryProvider)
+                            .toggleAllDevicesInProfile(profile.memberId, profile.id, value, ref);
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to toggle profile: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
-                    }
-                  },
-                  activeColor: colorScheme.secondary,
+                    },
+                    activeColor: colorScheme.secondary,
+                  ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, ProfileModel profile) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.delete_rounded,
+              color: colorScheme.error,
+              size: 24,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Delete Profile',
+              style: TextStyle(
+                color: colorScheme.error,
+              ),
+            ),
+          ],
+        ),
+        content: Text('Are you sure you want to delete "${profile.name}"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              try {
+                // Show loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Text('Deleting profile...'),
+                      ],
+                    ),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                
+                // Delete the profile
+                await ref.read(profileRepositoryProvider).deleteProfile(profile.memberId, profile.id);
+                
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Profile "${profile.name}" deleted successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete profile: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.error,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Delete'),
+          ),
+        ],
       ),
     );
   }
