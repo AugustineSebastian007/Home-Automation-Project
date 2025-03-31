@@ -88,4 +88,46 @@ class DeviceToggleViewModel extends StateNotifier<bool> {
       state = false;
     }
   }
+  
+  // Method to update device control value
+  Future<void> updateDeviceControlValue(DeviceModel device, int controlValue) async {
+    if (state) return; // Prevent multiple simultaneous updates
+    
+    state = true;
+    try {
+      print("Updating control value for device: ${device.id}, New value: $controlValue");
+      if (device.id.isEmpty) {
+        throw Exception("Cannot update control value for device with empty ID");
+      }
+      
+      // Create a new device model with the updated control value
+      final updatedDevice = device.copyWith(outlet: controlValue);
+      print("Updated device with new control value: ${updatedDevice.toJson()}");
+      
+      // Send the update request to the service
+      final response = await ref.read(deviceServiceProvider).updateDeviceControlValue(device, controlValue);
+      
+      if (response.success) {
+        await Future.delayed(200.milliseconds);
+        // Update the local storage with the new control value
+        await ref.read(deviceRepositoryProvider).updateDevice(
+          updatedDevice.roomId,
+          updatedDevice.outletId,
+          updatedDevice
+        );
+        
+        // Update the UI with the new control value
+        ref.read(deviceListVMProvider.notifier).updateDevice(updatedDevice);
+        
+        print("Device control value updated successfully: $controlValue");
+      } else {
+        throw Exception("Failed to update device control value: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error in updateDeviceControlValue: $e");
+      throw e;
+    } finally {
+      state = false;
+    }
+  }
 }

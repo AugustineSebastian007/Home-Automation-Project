@@ -7,6 +7,7 @@ import 'package:home_automation/features/shared/widgets/main_page_header.dart';
 import 'package:home_automation/features/shared/widgets/flicky_animated_icons.dart';
 import 'package:home_automation/helpers/enums.dart';
 import 'package:home_automation/styles/styles.dart';
+import 'package:home_automation/features/navigation/presentation/widgets/main_appbar.dart';
 
 class DummyMainHallPage extends ConsumerStatefulWidget {
   @override
@@ -250,12 +251,12 @@ class _DummyMainHallPageState extends ConsumerState<DummyMainHallPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: HomeAutomationAppBar(
+        title: 'Morning',
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: Text('Morning'),
       ),
       body: SafeArea(
         child: Column(

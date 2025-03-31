@@ -31,4 +31,22 @@ class DeviceService {
       return DeviceResponse(statusCode: 0, success: false);
     }
   }
+  
+  Future<DeviceResponse> updateDeviceControlValue(DeviceModel device, int controlValue) async {
+    try {
+      print("Updating control value for device: ${device.id}, New value: $controlValue");
+      
+      // Create a new device model with the updated control value (stored in outlet field)
+      final updatedDevice = device.copyWith(outlet: controlValue);
+      
+      // Simulate a successful update
+      await Future.delayed(Duration(milliseconds: 300));
+      
+      return DeviceResponse(statusCode: 200, success: true, message: 'Control value updated successfully');
+    } on Exception catch (e) {
+      print("Exception during control value update for device ${device.id}: $e");
+      Utils.showMessageOnSnack('Issue updating device control.', 'Please try again.');
+      return DeviceResponse(statusCode: 0, success: false, message: 'Failed to update control value');
+    }
+  }
 }
