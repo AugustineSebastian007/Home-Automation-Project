@@ -24,13 +24,13 @@ class SavingDeviceView extends StatelessWidget {
               )
             )
           ].animate(
-            interval: 200.ms,
+            interval: 100.ms,
           ).slideY(
             begin: 0.5, end: 0,
-            duration: 0.5.seconds,
+            duration: 0.25.seconds,
             curve: Curves.easeInOut
           ).fadeIn(
-            duration: 0.5.seconds,
+            duration: 0.25.seconds,
             curve: Curves.easeInOut
           ),
         )

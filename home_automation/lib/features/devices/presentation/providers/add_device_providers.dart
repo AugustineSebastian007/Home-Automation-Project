@@ -1,64 +1,84 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
-import 'package:home_automation/features/devices/data/models/outlet.model.dart';
+import 'package:home_automation/features/outlets/data/models/outlet.model.dart';
 import 'package:home_automation/features/devices/data/repositories/devices.repository.dart';
-import 'package:home_automation/features/devices/data/repositories/outlets.repository.dart';
+import 'package:home_automation/features/outlets/data/repositories/outlet_repository.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/devicelist.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_type.viewmodel.dart';
 import 'package:home_automation/features/devices/presentation/viewmodels/add_device_save.viewmodel.dart';
-import 'package:home_automation/features/shared/services/firestore.service.dart';
+import 'package:home_automation/features/shared/providers/shared_providers.dart';
 import 'package:home_automation/helpers/enums.dart'; // Adjust the path as needed
 import 'package:flutter/material.dart';
+import 'package:home_automation/features/rooms/data/models/room.model.dart';
 
 
 final deviceNameFieldProvider = Provider((ref) => TextEditingController());
 
 final deviceNameValueProvider = StateProvider<String>((ref) => '');
 
-final firestoreServiceProvider = Provider((ref) => FirestoreService());
-
-final deviceRepositoryProvider = Provider((ref) => DevicesRepository(ref));
-
-final outletRepositoryProvider = Provider((ref) => OutletsRepository(ref));
-
-final outletListProvider = FutureProvider<List<OutletModel>>((ref) async {
-  final outletRepository = ref.read(outletRepositoryProvider);
-  return await outletRepository.getAvailableOutlets();
+final deviceRepositoryProvider = Provider((ref) {
+  final firestoreService = ref.read(firestoreServiceProvider);
+  return DevicesRepository(firestoreService);
 });
 
-final outletValueProvider = StateProvider<OutletModel?>((ref) => null);
+final outletRepositoryProvider = Provider((ref) {
+  final firestoreService = ref.read(firestoreServiceProvider);
+  return OutletRepository(firestoreService);
+});
+
+final outletListProvider = FutureProvider.family<List<OutletModel>, String>((ref, roomId) {
+  final outletRepository = ref.read(outletRepositoryProvider);
+  return outletRepository.getOutlets(roomId);
+});
+
+final outletValueProvider = StateProvider<String?>((ref) => null);
 
 final deviceTypeListProvider = Provider<List<DeviceModel>>((ref) {
-  return const [
+  return [
     DeviceModel(
+      id: 'ac_type',
       iconOption: FlickyAnimatedIconOptions.ac,
       label: 'Air\nConditioning',
       isSelected: false,
-      outlet: 0
+      outlet: 0,
+      roomId: '',
+      outletId: '',
     ),
     DeviceModel(
+      id: 'personal_item_type',
       iconOption: FlickyAnimatedIconOptions.hairdryer,
-      label: 'Personal/nItem',
+      label: 'Personal\nItem',
       isSelected: false,
-      outlet: 0
+      outlet: 0,
+      roomId: '',
+      outletId: '',
     ),
     DeviceModel(
+      id: 'fan_type',
       iconOption: FlickyAnimatedIconOptions.fan,
       label: 'Fan',
       isSelected: false,
-      outlet: 0
+      outlet: 0,
+      roomId: '',
+      outletId: '',
     ),
     DeviceModel(
+      id: 'light_fixture_type',
       iconOption: FlickyAnimatedIconOptions.lightbulb,
       label: 'Light\nFixture',
       isSelected: false,
-      outlet: 0
+      outlet: 0,
+      roomId: '',
+      outletId: '',
     ),
     DeviceModel(
+      id: 'other_type',
       iconOption: FlickyAnimatedIconOptions.bolt,
       label: 'Other',
       isSelected: false,
-      outlet: 0
+      outlet: 0,
+      roomId: '',
+      outletId: '',
     ),
   ];
 });
@@ -90,3 +110,5 @@ final deviceListVMProvider = StateNotifierProvider<DeviceListViewModel, List<Dev
 });
 
 final selectedDeviceProvider = StateProvider<DeviceModel?>((ref) => null);
+
+final roomValueProvider = StateProvider<RoomModel?>((ref) => null);

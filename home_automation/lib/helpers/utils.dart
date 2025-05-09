@@ -24,7 +24,9 @@ class Utils {
           return child;
         }
       ).whenComplete(() {
-        onDismissed!();
+        if (onDismissed != null) {
+          onDismissed();
+        }
       });
     }
     else {
@@ -38,7 +40,9 @@ class Utils {
           );
         }
       ).whenComplete(() {
-        onDismissed!();
+        if (onDismissed != null) {
+          onDismissed();
+        }
       });
     }
     

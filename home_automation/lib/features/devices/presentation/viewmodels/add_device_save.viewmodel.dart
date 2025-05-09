@@ -1,11 +1,9 @@
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:home_automation/features/devices/data/models/device.model.dart';
 import 'package:home_automation/features/devices/presentation/providers/add_device_providers.dart';
-// import 'package:home_automation/features/devices/presentation/providers/device_providers.dart';
+import 'package:home_automation/features/devices/presentation/providers/device_providers.dart' as device_providers;
 import 'package:home_automation/helpers/enums.dart';
-import 'package:home_automation/helpers/utils.dart';
+import 'package:collection/collection.dart';
 
 class AddDeviceSaveViewModel extends StateNotifier<AddDeviceStates> {
 
@@ -13,37 +11,39 @@ class AddDeviceSaveViewModel extends StateNotifier<AddDeviceStates> {
   AddDeviceSaveViewModel(super.state, this.ref);
 
   Future<void> saveDevice() async {
-
     state = AddDeviceStates.saving;
-    await Future.delayed(1.seconds);
 
-    // collect the info
     final label = ref.read(deviceNameValueProvider);
+    final deviceTypes = ref.read(deviceTypeSelectionVMProvider);
+    final deviceType = deviceTypes.firstWhereOrNull((d) => d.isSelected);
     final outlet = ref.read(outletValueProvider);
-    final deviceType = ref.read(deviceTypeSelectionVMProvider.notifier).getSelectedDeviceType();
+    final room = ref.read(roomValueProvider);
 
-    ref.read(deviceListVMProvider.notifier).addDevice(
-      DeviceModel(
-        iconOption: deviceType.iconOption,
-        label: label,
-        isSelected: false,
-        outlet: outlet!.id, // Use directly if outlet is an int
-      )
+    if (label.isEmpty || deviceType == null || outlet == null || room == null) {
+      state = AddDeviceStates.none;
+      throw Exception('Invalid device data');
+    }
+
+    final DeviceModel deviceToSave = DeviceModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      iconOption: deviceType.iconOption,
+      label: label,
+      isSelected: false,
+      outlet: int.tryParse(outlet) ?? 0,  // Convert outlet to int
+      roomId: room.id,
+      outletId: outlet,
     );
 
-    final saveSuccess = await saveDeviceList();
-    
-    if (saveSuccess) {
-      state = AddDeviceStates.saved;
-      await Future.delayed(1.seconds);
-      GoRouter.of(Utils.mainNav.currentContext!).pop();
-    }
-  }
+    try {
+      await ref.read(device_providers.deviceRepositoryProvider).addDevice(room.id, outlet, deviceToSave);
+      ref.read(device_providers.deviceListVMProvider.notifier).addDevice(deviceToSave);
 
-  Future<bool> saveDeviceList() async {
-    final updatedList = ref.read(deviceListVMProvider);
-    await ref.read(deviceRepositoryProvider).saveDeviceList(updatedList);
-    return true;
+      state = AddDeviceStates.saved;
+    } catch (e) {
+      print('Error saving device: $e');
+      state = AddDeviceStates.none;
+      rethrow;
+    }
   }
 
   void resetAllValues() {

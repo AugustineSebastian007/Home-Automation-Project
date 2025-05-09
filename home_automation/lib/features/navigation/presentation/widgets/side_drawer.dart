@@ -42,9 +42,7 @@ class SideDrawer extends StatelessWidget {
                       SideMenuItem item = sideMenuItems[index];
 
                       return TextButton(
-                        onPressed: () {
-                          //
-                        },
+                        onPressed: item.onPressed,
                         child: Row(
                           children: [
                             Icon(item.icon, color: theme.surfaceTintColor),

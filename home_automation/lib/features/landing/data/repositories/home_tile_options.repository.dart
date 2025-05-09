@@ -18,10 +18,15 @@ class HomeTileOptionsRepository {
         option: HomeTileOptions.manageDevices,
       ),
       HomeTileOption(
-        icon: Icons.sensors,
-        label: 'Test Connectivity', 
-        option: HomeTileOptions.manageDevices,
+        icon: Icons.energy_savings_leaf,
+        label: 'Energy Saving', 
+        option: HomeTileOptions.energySaving,
       ),
+      // HomeTileOption(
+      //   icon: Icons.sensors,
+      //   label: 'Test Connectivity', 
+      //   option: HomeTileOptions.testConnection,
+      // ),
     ];
   }
 }

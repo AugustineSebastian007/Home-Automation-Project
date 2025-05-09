@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.1.38</domain>
+        <domain includeSubdomains="true">192.168.1.33</domain>
+        <domain includeSubdomains="true">192.168.57.113</domain>
+        <!-- Add any other IP addresses or domains that need cleartext traffic -->
+    </domain-config>
+</network-security-config> 

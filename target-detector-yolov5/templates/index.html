@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Object Detection</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        .video-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        #videoFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Live Video Feed">
+        <div id="overlay"></div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('overlay');
+        const videoFeed = document.getElementById('videoFeed');
+
+        overlay.addEventListener('click', function(e) {
+            const rect = overlay.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const scaleX = videoFeed.naturalWidth / videoFeed.width;
+            const scaleY = videoFeed.naturalHeight / videoFeed.height;
+            
+            const scaledX = Math.round(x * scaleX);
+            const scaledY = Math.round(y * scaleY);
+
+            fetch(`/add_point/${scaledX}/${scaledY}`);
+        });
+
+        overlay.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            fetch('/clear_points');
+        });
+    </script>
+</body>
+</html>

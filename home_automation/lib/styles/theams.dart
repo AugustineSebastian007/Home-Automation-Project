@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:home_automation/styles/colors.dart';
 import 'package:home_automation/styles/styles.dart';
 
+
 class HomeAutomationTheam {
   static ThemeData dark = ThemeData(
     canvasColor: Colors.transparent,
@@ -72,9 +73,14 @@ class HomeAutomationTheam {
       brightness: Brightness.light,
       seedColor: HomeAutomationColors.lightSeedColor,
       primary: HomeAutomationColors.lightPrimary,
-      secondary: HomeAutomationColors.lightSecondary,
-      tertiary: HomeAutomationColors.lightTertiary,
-      background: HomeAutomationColors.lightBackground,
+      secondary: Color(0xFF707070),
+      tertiary: Color(0xFFA0A0A0),
+      background: const Color.fromARGB(228, 255, 255, 255),
+      onSurface: Color(0xFF303030),
+      onBackground: Color(0xFF303030),
+      onSurfaceVariant: Color(0xFF202020),
+      surface: Color(0xFFE0E0E0),
+      surfaceVariant: Color(0xFFEEEEEE),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: HomeAutomationColors.lightPrimary
@@ -94,13 +100,29 @@ class HomeAutomationTheam {
       ),
     ),
     textTheme: TextTheme(
-      headlineLarge: HomeAutomationStyles.headlineLarge,
-      headlineMedium: HomeAutomationStyles.headlineMedium,
-      labelLarge: HomeAutomationStyles.labelLarge,
-      labelMedium: HomeAutomationStyles.labelMedium,
+      headlineLarge: HomeAutomationStyles.headlineLarge.copyWith(
+        color: Color(0xFF202020),
+      ),
+      headlineMedium: HomeAutomationStyles.headlineMedium.copyWith(
+        color: Color(0xFF202020),
+      ),
+      labelLarge: HomeAutomationStyles.labelLarge.copyWith(
+        color: Color(0xFF303030),
+      ),
+      labelMedium: HomeAutomationStyles.labelMedium.copyWith(
+        color: Color(0xFF303030),
+      ),
       displayMedium: HomeAutomationStyles.labelMedium.copyWith(
-        color: Colors.black,
-      )
+        color: Color(0xFF202020),
+      ),
+      bodyLarge: TextStyle(
+        color: Color(0xFF303030),
+        fontSize: 16,
+      ),
+      bodyMedium: TextStyle(
+        color: Color(0xFF303030),
+        fontSize: 14,
+      ),
     ),
     drawerTheme: const DrawerThemeData(
       backgroundColor: HomeAutomationColors.lightSeedColor,
@@ -108,7 +130,7 @@ class HomeAutomationTheam {
     ),
     iconTheme: const IconThemeData(
       size: HomeAutomationStyles.mediumIconSize,
-      color: HomeAutomationColors.darkSecondary
+      color: Color(0xFF606060),
     ),
     snackBarTheme: SnackBarThemeData(
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(
